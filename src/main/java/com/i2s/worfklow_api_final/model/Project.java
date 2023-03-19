@@ -1,17 +1,19 @@
 package com.i2s.worfklow_api_final.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.i2s.worfklow_api_final.dto.ProjectDTO;
 
 import javax.persistence.*;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "projects")
 public class Project {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private long id;
 
     @Column(nullable = false, name = "project_name")
     private String projectName;
@@ -19,6 +21,7 @@ public class Project {
     @Column(name = "description")
     private String description;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "project", cascade = CascadeType.ALL)
     private List<Phase> phases;
 
@@ -31,6 +34,14 @@ public class Project {
     public Project() {
     }
 
+    public List<Phase> getPhases() {
+        return phases;
+    }
+
+    public void setPhases(List<Phase> phases) {
+        this.phases = phases;
+    }
+
     public Project(ProjectDTO projectDTO){
         this.id=projectDTO.getId();
         this.projectName=projectDTO.getProjectName();
@@ -38,11 +49,14 @@ public class Project {
         this.phases = projectDTO.getPhases();
     }
 
-    public Long getId() {
+    public boolean addPhase(Phase phase){
+        return this.phases.add(phase);
+    }
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 
@@ -62,19 +76,18 @@ public class Project {
         this.description = description;
     }
 
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         Project project = (Project) o;
-
-        return getId().equals(project.getId());
+        return getId() == project.getId();
     }
 
     @Override
     public int hashCode() {
-        return getId().hashCode();
+        return Objects.hash(getId());
     }
 
     @Override

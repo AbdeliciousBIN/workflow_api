@@ -1,6 +1,8 @@
 package com.i2s.worfklow_api_final.model;
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.i2s.worfklow_api_final.dto.StepDTO;
 
 import javax.persistence.*;
@@ -18,6 +20,8 @@ public class Step {
     @Column(name = "description")
     private String description;
 
+
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "phase_id")
     private Phase phase;

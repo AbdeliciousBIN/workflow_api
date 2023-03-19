@@ -17,7 +17,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/projects")
+@RequestMapping("/api/projects")
 public class ProjectController
 {
     private ProjectService projectService;
@@ -27,24 +27,37 @@ public class ProjectController
     }
     @GetMapping
     public ResponseEntity<List<ProjectDTO>> getAllProjects(){
-        List<Project> projects = projectService.getAllProjects();
-        List<ProjectDTO> projectsDTO = projects.stream().map(ProjectDTO::new).collect(Collectors.toList());
-        return ResponseEntity.ok(projectsDTO);
+        return ResponseEntity.ok( projectService.getAllProjects());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<ProjectDTO> getProjectById(@PathVariable Long id){
-        Optional<Project> project = projectService.getProjectById(id);
-        if(project.isPresent()) return ResponseEntity.ok(new ProjectDTO(project.get()));
+        Optional<ProjectDTO> projectDTO = projectService.getProjectById(id);
+        if(projectDTO.isPresent()) return ResponseEntity.ok(projectDTO.get());
         return ResponseEntity.notFound().build();
     }
 
+    @GetMapping("/idByName")
+    public ResponseEntity<?> getProjectIdByName(@RequestParam("projectName") String projectName){
+        try{
+            return ResponseEntity.ok(projectService.getProjectIdByName(projectName));
+        }catch (DataIntegrityViolationException e) {
+            // handle database constraint violation error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
+        } catch (IllegalArgumentException e) {
+            // handle invalid input data error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
+        } catch (Exception e) {
+            // handle any other unexpected error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+        }
+    }
 
     @PostMapping
     public ResponseEntity<?> createProject(@RequestBody ProjectDTO projectDTO){
         try {
-            Project createdProject = projectService.saveProject(new Project(projectDTO));
-            return ResponseEntity.status(HttpStatus.CREATED).body(new ProjectDTO(createdProject));
+            ProjectDTO createdProject = projectService.saveProject(projectDTO);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdProject);
         }catch (DataIntegrityViolationException e) {
             // handle database constraint violation error
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
@@ -60,8 +73,8 @@ public class ProjectController
     @PutMapping("/{id}")
     public ResponseEntity<?> updateProject(@PathVariable Long id,@RequestBody ProjectDTO projectDTO){
         try{
-            Project updatedProject = projectService.updateProject(id,new Project(projectDTO));
-            return ResponseEntity.ok(new ProjectDTO(updatedProject));
+            ProjectDTO updatedProject = projectService.updateProject(id,projectDTO);
+            return ResponseEntity.ok(updatedProject);
         } catch(EntityNotFoundException e){
             return ResponseEntity.notFound().build();
         }catch(DataIntegrityViolationException e){

@@ -13,10 +13,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.persistence.EntityNotFoundException;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
+
 
 @RestController
-@RequestMapping("/steps")
+@RequestMapping("/api/steps")
 public class StepController {
     private StepService stepService;
 
@@ -27,23 +27,20 @@ public class StepController {
 
     @GetMapping
     public ResponseEntity<List<StepDTO>> getAllSteps(){
-        List<Step> steps = stepService.getAllSteps();
-        List<StepDTO> stepsDTO = steps.stream().map(StepDTO::new).collect(Collectors.toList());
-        return ResponseEntity.ok(stepsDTO);
+        return ResponseEntity.ok(stepService.getAllSteps());
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<StepDTO> getStepById(@PathVariable Long id ){
-        Optional<Step> step = stepService.getStepById(id);
-        if(step.isPresent()) return ResponseEntity.ok(new StepDTO(step.get()));
+        Optional<StepDTO> stepDTO = stepService.getStepById(id);
+        if(stepDTO.isPresent()) return ResponseEntity.ok(stepDTO.get());
         return ResponseEntity.notFound().build();
     }
 
-    @PostMapping
-    public ResponseEntity<?> createStep(@RequestBody StepDTO stepDTO){
+    @GetMapping("/phase/{id}")
+    public ResponseEntity<?> getStepsByPhaseId(@PathVariable long id){
         try{
-            Step step = stepService.saveStep(new Step(stepDTO));
-            return ResponseEntity.status(HttpStatus.CREATED).body(new StepDTO(step));
+            return ResponseEntity.ok(stepService.getStepsByPhaseId(id));
         }catch (DataIntegrityViolationException e) {
             // handle database constraint violation error
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
@@ -56,11 +53,42 @@ public class StepController {
         }
     }
 
-    @PutMapping("/{id}")
+//    @PostMapping
+//    public ResponseEntity<?> createStep(@RequestBody StepDTO stepDTO){
+//        try{
+//            Step step = stepService.saveStep(new Step(stepDTO));
+//            return ResponseEntity.status(HttpStatus.CREATED).body(new StepDTO(step));
+//        }catch (DataIntegrityViolationException e) {
+//            // handle database constraint violation error
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
+//        } catch (IllegalArgumentException e) {
+//            // handle invalid input data error
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
+//        } catch (Exception e) {
+//            // handle any other unexpected error
+//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+//        }
+//    }
+
+    @PostMapping("/phases/{phaseId}")
+    public ResponseEntity<?> createStep(@PathVariable Long phaseId, @RequestBody StepDTO stepDTO){
+        try{
+            return ResponseEntity.status(HttpStatus.CREATED).body(stepService.createStep(phaseId,stepDTO));
+        }catch (DataIntegrityViolationException e) {
+            // handle database constraint violation error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
+        } catch (IllegalArgumentException e) {
+            // handle invalid input data error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
+        } catch (Exception e) {
+            // handle any other unexpected error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+        }
+    }
+    @PutMapping("/steps/{id}")
     public ResponseEntity<?> updateStep(@PathVariable Long id, @RequestBody StepDTO stepDTO){
         try{
-            Step step = stepService.updateStep(id,new Step(stepDTO));
-            return ResponseEntity.ok(new StepDTO(step));
+            return ResponseEntity.ok(stepService.updateStep(id, stepDTO));
         }catch(EntityNotFoundException e){
             return ResponseEntity.notFound().build();
         }catch(DataIntegrityViolationException e){
@@ -74,7 +102,7 @@ public class StepController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/steps/{id}")
     public ResponseEntity<?> deleteStep(@PathVariable Long id ){
         try{
             stepService.deleteStep(id);

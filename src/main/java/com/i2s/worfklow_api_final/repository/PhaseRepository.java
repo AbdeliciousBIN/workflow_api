@@ -16,6 +16,9 @@ public interface PhaseRepository extends JpaRepository<Phase, Long> {
 
     Optional<Phase> findByPhaseNameAndProject(String phaseName, Project project);
 
+    List<Phase> findByProject(Project project);
+
+
     //Optional<Phase> findByStepsAndProject(List<Step> steps, Project project);
     // Optional<Phase> findByStepsAndProjectIn(List<Step> steps, Project project);
 

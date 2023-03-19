@@ -19,6 +19,7 @@ public class PhaseDTO {
         this.id= phase.getId();
         this.phaseName = phase.getPhaseName();
         this.description = phase.getDescription();
+        this.project = phase.getProject();
         this.steps = phase.getSteps();
     }
 

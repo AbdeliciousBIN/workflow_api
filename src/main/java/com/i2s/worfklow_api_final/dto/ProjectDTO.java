@@ -6,7 +6,7 @@ import com.i2s.worfklow_api_final.model.Project;
 import java.util.List;
 
 public class ProjectDTO {
-    private Long id;
+    private long id;
     private String projectName;
     private String description;
     private List<Phase> phases;
@@ -25,13 +25,14 @@ public class ProjectDTO {
         this.id = project.getId();
         this.projectName = project.getProjectName();
         this.description = project.getDescription();
+        this.phases = project.getPhases();
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(long id) {
         this.id = id;
     }
 

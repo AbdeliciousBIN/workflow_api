@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/phases")
+@RequestMapping("/api/phases")
 public class PhaseController {
     private PhaseService phaseService;
 
@@ -30,40 +30,87 @@ public class PhaseController {
 
     @GetMapping
     public ResponseEntity<List<PhaseDTO>> getAllPhases(){
-        List<Phase> phases = phaseService.getAllPhases();
-        List<PhaseDTO> phasesDTO = phases.stream().map(PhaseDTO::new).collect(Collectors.toList());
-        return ResponseEntity.ok(phasesDTO);
+        return ResponseEntity.ok(phaseService.getAllPhases());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<PhaseDTO> getPhaseById(@PathVariable Long id){
-        Optional<Phase> phase = phaseService.getPhaseById(id);
-        if(phase.isPresent()) return ResponseEntity.ok(new PhaseDTO(phase.get()));
+    public ResponseEntity<PhaseDTO> getPhaseById(@PathVariable long id){
+        Optional<PhaseDTO> phaseDTO = phaseService.getPhaseById(id);
+        if(phaseDTO.isPresent()) return ResponseEntity.ok(phaseDTO.get());
         return ResponseEntity.notFound().build();
     }
 
-    @PostMapping
-    public ResponseEntity<?> createPhase(@RequestBody PhaseDTO phaseDTO){
-    try{
-       Phase createdPhase = phaseService.savePhase(new Phase(phaseDTO));
-       return ResponseEntity.status(HttpStatus.CREATED).body(new PhaseDTO(createdPhase));
-    }catch (DataIntegrityViolationException e) {
-        // handle database constraint violation error
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
-    } catch (IllegalArgumentException e) {
-        // handle invalid input data error
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
-    } catch (Exception e) {
-        // handle any other unexpected error
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
-    }
+    @GetMapping("/idByNameAndProjectName")
+    public ResponseEntity<?> getPhaseIdByNameAndProjectName(@RequestParam("phaseName") String phaseName,
+                                                            @RequestParam("projectName") String projectName){
+        try{
+
+            return ResponseEntity.ok(phaseService.getPhaseIdByNameAndProjectName(phaseName,projectName));
+        }catch (DataIntegrityViolationException e) {
+            // handle database constraint violation error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
+        } catch (IllegalArgumentException e) {
+            // handle invalid input data error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
+        } catch (Exception e) {
+            // handle any other unexpected error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+        }
     }
 
-    @PutMapping("/{id}")
+    @GetMapping("project/{id}")
+    public ResponseEntity<?> getPhasesByProjectId(@PathVariable long id){
+        try{
+            return ResponseEntity.ok(phaseService.getPhasesByProjectId(id));
+        }catch (DataIntegrityViolationException e) {
+            // handle database constraint violation error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
+        } catch (IllegalArgumentException e) {
+            // handle invalid input data error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
+        } catch (Exception e) {
+            // handle any other unexpected error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+        }
+    }
+
+//    @PostMapping
+//    public ResponseEntity<?> createPhase(@RequestBody PhaseDTO phaseDTO){
+//    try{
+//       Phase createdPhase = phaseService.savePhase(new Phase(phaseDTO));
+//       return ResponseEntity.status(HttpStatus.CREATED).body(new PhaseDTO(createdPhase));
+//    }catch (DataIntegrityViolationException e) {
+//        // handle database constraint violation error
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
+//    } catch (IllegalArgumentException e) {
+//        // handle invalid input data error
+//        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
+//    } catch (Exception e) {
+//        // handle any other unexpected error
+//        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+//    }
+//    }
+
+    @PostMapping("/projects/{projectId}")
+    public ResponseEntity<?> createPhase(@PathVariable Long projectId, @RequestBody PhaseDTO phaseDTO){
+        try{
+           return ResponseEntity.status(HttpStatus.CREATED).body(phaseService.createPhase(projectId,phaseDTO));
+        }catch (DataIntegrityViolationException e) {
+            // handle database constraint violation error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
+        } catch (IllegalArgumentException e) {
+            // handle invalid input data error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
+        } catch (Exception e) {
+            // handle any other unexpected error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+        }
+    }
+
+    @PutMapping("/phases/{id}")
     public ResponseEntity<?> updatePhase(@PathVariable Long id ,@RequestBody PhaseDTO phaseDTO){
     try{
-        Phase updatedPhase = phaseService.updatePhase(id,new Phase(phaseDTO));
-        return ResponseEntity.ok(new PhaseDTO(updatedPhase));
+        return ResponseEntity.ok(phaseService.updatePhase(id,phaseDTO));
     }catch(EntityNotFoundException e){
     return ResponseEntity.notFound().build();
     }catch(DataIntegrityViolationException e){
@@ -77,7 +124,7 @@ public class PhaseController {
     }
 
     }
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/phases/{id}")
     public ResponseEntity<?> deletePhase(@PathVariable Long id){
         try{
            phaseService.deletePhase(id);
