@@ -7,17 +7,18 @@ public class StepDTO {
     private long id;
     private String stepName;
     private String description;
-    private Phase phase;
+    private Phase phase; // get not exposed
 
     public StepDTO() {
     }
 
-    public StepDTO(Step step){
-        this.id= step.getId();
-        this.stepName= step.getStepName();
+    public StepDTO(Step step) {
+        this.id = step.getId();
+        this.stepName = step.getStepName();
         this.description = step.getDescription();
         this.phase = step.getPhase();
     }
+
     public long getId() {
         return id;
     }
@@ -42,9 +43,9 @@ public class StepDTO {
         this.description = description;
     }
 
-    public Phase getPhase() {
-        return phase;
-    }
+//    public Phase getPhase() {
+//        return phase;
+//    }
 
     public void setPhase(Phase phase) {
         this.phase = phase;
@@ -52,7 +53,6 @@ public class StepDTO {
 
     @Override
     public String toString() {
-        return "StepDTO [id=" + id + ", stepName=" + stepName + ", description=" + description + ", phase=" + phase
-                + "]";
+        return "StepDTO [id=" + id + ", stepName=" + stepName + ", description=" + description + ", phase=" + phase + "]";
     }
 }

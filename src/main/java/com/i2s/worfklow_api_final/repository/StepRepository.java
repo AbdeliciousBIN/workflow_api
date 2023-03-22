@@ -12,10 +12,9 @@ import java.util.Optional;
 public interface StepRepository extends JpaRepository<Step, Long> {
     List<Step> findAll();
 
-    Optional<Step> findById(Long id);
+    Optional<Step> findById(long id);
+
     List<Step> findByPhase(Phase phase);
-
-
 
 
 }

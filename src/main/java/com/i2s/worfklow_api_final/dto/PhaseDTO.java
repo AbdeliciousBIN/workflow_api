@@ -2,25 +2,26 @@ package com.i2s.worfklow_api_final.dto;
 
 import com.i2s.worfklow_api_final.model.Phase;
 import com.i2s.worfklow_api_final.model.Project;
-import com.i2s.worfklow_api_final.model.Step;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class PhaseDTO {
     private long id;
     private String phaseName;
     private String description;
-    private List<Step> steps;
-    private Project project;
+    private List<StepDTO> steps;
+    private ProjectDTO project; // get not exposed
+
     public PhaseDTO() {
     }
 
-    public PhaseDTO(Phase phase){
-        this.id= phase.getId();
+    public PhaseDTO(Phase phase) {
+        this.id = phase.getId();
         this.phaseName = phase.getPhaseName();
         this.description = phase.getDescription();
-        this.project = phase.getProject();
-        this.steps = phase.getSteps();
+        this.project = new ProjectDTO(phase.getProject());
+        this.steps = phase.getSteps().stream().map(StepDTO::new).collect(Collectors.toList());
     }
 
     public long getId() {
@@ -31,11 +32,11 @@ public class PhaseDTO {
         this.id = id;
     }
 
-    public Project getProject() {
-        return project;
-    }
+//    public ProjectDTO getProject() {
+//        return project;
+//    }
 
-    public void setProject(Project project) {
+    public void setProject(ProjectDTO project) {
         this.project = project;
     }
 
@@ -55,11 +56,11 @@ public class PhaseDTO {
         this.description = description;
     }
 
-    public List<Step> getSteps() {
+    public List<StepDTO> getSteps() {
         return steps;
     }
 
-    public void setSteps(List<Step> steps) {
+    public void setSteps(List<StepDTO> steps) {
         this.steps = steps;
     }
 
@@ -67,4 +68,6 @@ public class PhaseDTO {
     public String toString() {
         return "PhaseDTO [id=" + id + ", phaseName=" + phaseName + ", description=" + description + "]";
     }
+
+
 }

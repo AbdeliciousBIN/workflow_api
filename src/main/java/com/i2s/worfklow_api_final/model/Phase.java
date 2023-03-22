@@ -1,7 +1,5 @@
 package com.i2s.worfklow_api_final.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.i2s.worfklow_api_final.dto.PhaseDTO;
 
 import javax.persistence.*;
@@ -20,26 +18,25 @@ public class Phase {
     @Column(name = "description")
     private String description;
 
-    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private Project project;
 
-    @JsonIgnore
-    @OneToMany(mappedBy = "phase", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "phase", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Step> steps;
 
     public Phase() {
 
     }
-    public Phase(PhaseDTO phaseDTO){
+
+    public Phase(PhaseDTO phaseDTO) {
         this.id = phaseDTO.getId();
-        this.phaseName=phaseDTO.getPhaseName();
-        this.description=phaseDTO.getDescription();
-        this.project = phaseDTO.getProject();
-        this.steps = phaseDTO.getSteps();
+        this.phaseName = phaseDTO.getPhaseName();
+        this.description = phaseDTO.getDescription();
+//        this.project = phaseDTO.getProject();
+//        this.steps = phaseDTO.getSteps();
     }
+
     public long getId() {
         return id;
     }

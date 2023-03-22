@@ -1,35 +1,22 @@
 package com.i2s.worfklow_api_final.dto;
 
-import com.i2s.worfklow_api_final.model.Job;
-import com.i2s.worfklow_api_final.model.User;
-
 import java.util.Objects;
 
 public class UserDTO {
 
-    private long id ;
+    private long id;
     private String fullName;
     private String email;
-    private String role ;
+    private String role;
     private String passwordHash;
     private String phoneNumber;
     private String address;
-    private String profilePicture ;
-    private Job job;
+    private String profilePicture;
+    private JobDTO job;
 
     public UserDTO() {
     }
 
-    public UserDTO(User user){
-        this.id = user.getId();
-        this.fullName = user.getFullName();
-        this.email = user.getEmail();
-        this.role = user.getRole();
-        this.phoneNumber = user.getPhoneNumber();
-        this.address= user.getAddress();
-        this.job = user.getJob() ;
-
-    }
 
     public long getId() {
         return id;
@@ -109,11 +96,11 @@ public class UserDTO {
         this.profilePicture = profilePicture;
     }
 
-    public Job getJob() {
+    public JobDTO getJob() {
         return job;
     }
 
-    public void setJob(Job job) {
+    public void setJob(JobDTO job) {
         this.job = job;
     }
 

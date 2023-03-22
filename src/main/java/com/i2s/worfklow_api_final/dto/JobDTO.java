@@ -1,8 +1,5 @@
 package com.i2s.worfklow_api_final.dto;
 
-import com.i2s.worfklow_api_final.model.Job;
-import com.i2s.worfklow_api_final.model.User;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -10,14 +7,11 @@ public class JobDTO {
 
     private long id;
     private String title;
-    private List<User> users;
+    private List<UserDTO> users;
 
     public JobDTO() {
     }
-    public JobDTO(Job job){
-        this.id= job.getId();
-        this.title=job.getTitle();
-    }
+
 
     public long getId() {
         return id;
@@ -35,11 +29,11 @@ public class JobDTO {
         this.title = title;
     }
 
-    public List<User> getUsers() {
+    public List<UserDTO> getUsers() {
         return users;
     }
 
-    public void setUsers(List<User> users) {
+    public void setUsers(List<UserDTO> users) {
         this.users = users;
     }
 

@@ -24,7 +24,7 @@ public class User {
     @Column(name = "phone_number")
     private String phoneNumber;
 
-    @Column(name = "address ")
+    @Column(name = "address")
     private String address;
     @Column( name = "profile_picture")
     private String profilePicture ;
@@ -37,16 +37,7 @@ public class User {
     public User() {
     }
 
-    public User(UserDTO userDTO){
-        this.id = userDTO.getId();
-        this.fullName = userDTO.getFullName();
-        this.email = userDTO.getEmail();
-        this.role = userDTO.getRole();
-        this.passwordHash = userDTO.getPasswordHash();
-        this.phoneNumber = userDTO.getPhoneNumber();;
-        this.profilePicture = userDTO.getProfilePicture();
-        this.job = userDTO.getJob();
-    }
+
 
     public long getId() {
         return id;

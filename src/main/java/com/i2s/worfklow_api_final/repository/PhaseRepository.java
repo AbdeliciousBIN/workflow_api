@@ -12,16 +12,11 @@ import java.util.Optional;
 public interface PhaseRepository extends JpaRepository<Phase, Long> {
     List<Phase> findAll();
 
-    Optional<Phase> findById(Long id);
+    Optional<Phase> findById(long id);
 
     Optional<Phase> findByPhaseNameAndProject(String phaseName, Project project);
 
     List<Phase> findByProject(Project project);
-
-
-    //Optional<Phase> findByStepsAndProject(List<Step> steps, Project project);
-    // Optional<Phase> findByStepsAndProjectIn(List<Step> steps, Project project);
-
 
 
 }

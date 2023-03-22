@@ -1,7 +1,6 @@
 package com.i2s.worfklow_api_final.controller;
 
 import com.i2s.worfklow_api_final.dto.StepDTO;
-import com.i2s.worfklow_api_final.model.Step;
 import com.i2s.worfklow_api_final.service.StepService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -18,30 +17,30 @@ import java.util.Optional;
 @RestController
 @RequestMapping("/api/steps")
 public class StepController {
-    private StepService stepService;
+    private final StepService stepService;
 
     @Autowired
-    public StepController(StepService stepService){
+    public StepController(StepService stepService) {
         this.stepService = stepService;
     }
 
     @GetMapping
-    public ResponseEntity<List<StepDTO>> getAllSteps(){
+    public ResponseEntity<List<StepDTO>> getAllSteps() {
         return ResponseEntity.ok(stepService.getAllSteps());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<StepDTO> getStepById(@PathVariable Long id ){
+    public ResponseEntity<StepDTO> getStepById(@PathVariable Long id) {
         Optional<StepDTO> stepDTO = stepService.getStepById(id);
-        if(stepDTO.isPresent()) return ResponseEntity.ok(stepDTO.get());
+        if (stepDTO.isPresent()) return ResponseEntity.ok(stepDTO.get());
         return ResponseEntity.notFound().build();
     }
 
     @GetMapping("/phase/{id}")
-    public ResponseEntity<?> getStepsByPhaseId(@PathVariable long id){
-        try{
+    public ResponseEntity<?> getStepsByPhaseId(@PathVariable long id) {
+        try {
             return ResponseEntity.ok(stepService.getStepsByPhaseId(id));
-        }catch (DataIntegrityViolationException e) {
+        } catch (DataIntegrityViolationException e) {
             // handle database constraint violation error
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
         } catch (IllegalArgumentException e) {
@@ -53,28 +52,12 @@ public class StepController {
         }
     }
 
-//    @PostMapping
-//    public ResponseEntity<?> createStep(@RequestBody StepDTO stepDTO){
-//        try{
-//            Step step = stepService.saveStep(new Step(stepDTO));
-//            return ResponseEntity.status(HttpStatus.CREATED).body(new StepDTO(step));
-//        }catch (DataIntegrityViolationException e) {
-//            // handle database constraint violation error
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
-//        } catch (IllegalArgumentException e) {
-//            // handle invalid input data error
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
-//        } catch (Exception e) {
-//            // handle any other unexpected error
-//            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
-//        }
-//    }
 
     @PostMapping("/phases/{phaseId}")
-    public ResponseEntity<?> createStep(@PathVariable Long phaseId, @RequestBody StepDTO stepDTO){
-        try{
-            return ResponseEntity.status(HttpStatus.CREATED).body(stepService.createStep(phaseId,stepDTO));
-        }catch (DataIntegrityViolationException e) {
+    public ResponseEntity<?> createStep(@PathVariable Long phaseId, @RequestBody StepDTO stepDTO) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(stepService.createStep(phaseId, stepDTO));
+        } catch (DataIntegrityViolationException e) {
             // handle database constraint violation error
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
         } catch (IllegalArgumentException e) {
@@ -85,35 +68,36 @@ public class StepController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
         }
     }
+
     @PutMapping("/steps/{id}")
-    public ResponseEntity<?> updateStep(@PathVariable Long id, @RequestBody StepDTO stepDTO){
-        try{
+    public ResponseEntity<?> updateStep(@PathVariable Long id, @RequestBody StepDTO stepDTO) {
+        try {
             return ResponseEntity.ok(stepService.updateStep(id, stepDTO));
-        }catch(EntityNotFoundException e){
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
-        }catch(DataIntegrityViolationException e){
+        } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
-        }catch(IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
-        }catch(OptimisticLockingFailureException e){
+        } catch (OptimisticLockingFailureException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("Step has been modified by another user. Please refresh and try again.");
-        }catch(Exception e ){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
         }
     }
 
     @DeleteMapping("/steps/{id}")
-    public ResponseEntity<?> deleteStep(@PathVariable Long id ){
-        try{
+    public ResponseEntity<?> deleteStep(@PathVariable Long id) {
+        try {
             stepService.deleteStep(id);
-            return ResponseEntity.noContent().build() ;
-        }catch(EntityNotFoundException e){
+            return ResponseEntity.noContent().build();
+        } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
-        }catch(DataIntegrityViolationException e){
+        } catch (DataIntegrityViolationException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
-        }catch(IllegalArgumentException e){
+        } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
-        }catch(Exception e ){
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
         }
     }

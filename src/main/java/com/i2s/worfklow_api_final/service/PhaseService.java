@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
+import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -35,64 +36,47 @@ public class PhaseService {
         return phaseRepository.findById(id).map(PhaseDTO::new);
     }
 
-    public Optional<PhaseDTO> getPhaseByPhaseNameAndProject(String phaseName, ProjectDTO projectDTO) {
+    public Optional<PhaseDTO> getPhaseByPhaseNameAndProject(String phaseName, @Valid ProjectDTO projectDTO) {
         return phaseRepository.findByPhaseNameAndProject(phaseName, new Project(projectDTO)).map(PhaseDTO::new);
     }
-    public PhaseDTO savePhase(PhaseDTO phaseDTO){
+
+    public PhaseDTO savePhase(@Valid PhaseDTO phaseDTO) {
         return new PhaseDTO(phaseRepository.save(new Phase(phaseDTO)));
     }
-    public PhaseDTO updatePhase(long id, PhaseDTO newPhaseDTO){
-        Optional<Phase> optionalPhase = phaseRepository.findById(id);
-        if(optionalPhase.isPresent()){
-            Phase updatedPhase = optionalPhase.get();
-            updatedPhase.setPhaseName(newPhaseDTO.getPhaseName());
-            updatedPhase.setDescription(newPhaseDTO.getDescription());
-            updatedPhase.setProject(newPhaseDTO.getProject());
-            updatedPhase.setSteps(newPhaseDTO.getSteps());
-            return new PhaseDTO(phaseRepository.save(updatedPhase));
-        }else{
-            throw new EntityNotFoundException("Phase with ID" + id + "not found.");
-        }
+
+    public PhaseDTO updatePhase(long id, @Valid PhaseDTO newPhaseDTO) {
+        Phase updatedPhase = phaseRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Phase with ID " + id + " not found"));
+        updatedPhase.setPhaseName(newPhaseDTO.getPhaseName());
+        updatedPhase.setDescription(newPhaseDTO.getDescription());
+//            updatedPhase.setProject(newPhaseDTO.getProject());
+//            updatedPhase.setSteps(newPhaseDTO.getSteps());
+        return new PhaseDTO(phaseRepository.save(updatedPhase));
+
     }
 
-    public void deletePhase(long id ){
-        Optional<Phase> phase = phaseRepository.findById(id);
-        if(phase.isPresent()){
-            phaseRepository.deleteById(phase.get().getId());
-            Project project = phase.get().getProject();
-        }else{
-            throw new EntityNotFoundException("Phase with ID "+ id + " not found." );
-        }
+    public void deletePhase(long id) {
+        Phase phase = phaseRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Phase with ID " + id + " not found"));
+        phaseRepository.deleteById(phase.getId());
+
+
     }
-    public PhaseDTO createPhase(long projectId, PhaseDTO phaseDTO){
-        Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + projectId));
+
+    public PhaseDTO createPhase(long projectId, @Valid PhaseDTO phaseDTO) {
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException("Project not found with id: " + projectId));
         Phase phase = new Phase(phaseDTO);
         phase.setProject(project);
         return new PhaseDTO(phaseRepository.save(phase));
     }
-   /*public Optional<Phase> getPhaseByStepAndProjectIn(List<Step> steps, Project project) {
-        return phaseRepository.findByStepsAndProjectIn(steps, project);
-    }*/
 
-    public long getPhaseIdByNameAndProjectName(String phaseName, String projectName){
-        Optional<Project> optionalProject = projectService.getProjectByName(projectName).map(Project::new);
-        if(optionalProject.isPresent()){
-            Optional<Phase> optionalPhase = phaseRepository.findByPhaseNameAndProject(phaseName,optionalProject.get());
-            if(optionalPhase.isPresent()){
-                System.out.println("phase id in getPhaseId: "+ optionalPhase.get().getId());
-                return optionalPhase.get().getId();
-            }else{
-                throw new EntityNotFoundException("Phase with Name" + phaseName + "not found.");
-            }
-        }else{
-            throw new EntityNotFoundException("Project with Name" + projectName + "not found.");
-        }
+    public long getPhaseIdByNameAndProjectName(String phaseName, String projectName) {
+        Project project = projectService.getProjectByName(projectName).map(Project::new).orElseThrow(() -> new EntityNotFoundException("Project with Name " + projectName + " not found."));
+        Phase phase = phaseRepository.findByPhaseNameAndProject(phaseName, project).orElseThrow(() -> new EntityNotFoundException("Phase with Name " + phaseName + " not found."));
+        return phase.getId();
     }
 
-    public List<PhaseDTO> getPhasesByProjectId(long id){
-        Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new EntityNotFoundException("Project with ID " + id + " not found."));
+    public List<PhaseDTO> getPhasesByProjectId(long id) {
+        Project project = projectRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Project with ID " + id + " not found."));
         return phaseRepository.findByProject(project).stream().map(PhaseDTO::new).collect(Collectors.toList());
     }
 }
+

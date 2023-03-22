@@ -23,10 +23,7 @@ public class Job {
     public Job() {
     }
 
-    public Job(JobDTO jobDTO){
-        this.id = jobDTO.getId();
-        this.users = jobDTO.getUsers();
-    }
+
     public long getId() {
         return id;
     }
