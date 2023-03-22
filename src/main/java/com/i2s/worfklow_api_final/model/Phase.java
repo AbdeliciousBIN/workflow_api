@@ -1,5 +1,6 @@
 package com.i2s.worfklow_api_final.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.i2s.worfklow_api_final.dto.PhaseDTO;
 
 import javax.persistence.*;
@@ -18,6 +19,7 @@ public class Phase {
     @Column(name = "description")
     private String description;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "project_id")
     private Project project;
@@ -30,7 +32,7 @@ public class Phase {
     }
 
     public Phase(PhaseDTO phaseDTO) {
-        this.id = phaseDTO.getId();
+        if(phaseDTO.getId() !=0 )this.id = phaseDTO.getId();
         this.phaseName = phaseDTO.getPhaseName();
         this.description = phaseDTO.getDescription();
 //        this.project = phaseDTO.getProject();

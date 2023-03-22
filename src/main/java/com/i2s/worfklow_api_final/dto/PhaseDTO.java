@@ -11,7 +11,7 @@ public class PhaseDTO {
     private String phaseName;
     private String description;
     private List<StepDTO> steps;
-    private ProjectDTO project; // get not exposed
+
 
     public PhaseDTO() {
     }
@@ -20,8 +20,8 @@ public class PhaseDTO {
         this.id = phase.getId();
         this.phaseName = phase.getPhaseName();
         this.description = phase.getDescription();
-        this.project = new ProjectDTO(phase.getProject());
-        this.steps = phase.getSteps().stream().map(StepDTO::new).collect(Collectors.toList());
+        if(phase.getSteps()!=null) this.steps = phase.getSteps().stream().map(StepDTO::new).collect(Collectors.toList());
+
     }
 
     public long getId() {
@@ -32,13 +32,11 @@ public class PhaseDTO {
         this.id = id;
     }
 
-//    public ProjectDTO getProject() {
+//    public Project getProject() {
 //        return project;
 //    }
 
-    public void setProject(ProjectDTO project) {
-        this.project = project;
-    }
+
 
     public String getPhaseName() {
         return phaseName;

@@ -10,6 +10,7 @@ public class ProjectDTO {
     private long id;
     private String projectName;
     private String description;
+
     private List<PhaseDTO> phases;
     public ProjectDTO() {
     }
@@ -27,7 +28,7 @@ public class ProjectDTO {
         this.id = project.getId();
         this.projectName = project.getProjectName();
         this.description = project.getDescription();
-        this.phases = project.getPhases().stream().map(PhaseDTO::new).collect(Collectors.toList());
+        if(project.getPhases()!=null)  this.phases = project.getPhases().stream().map(PhaseDTO::new).collect(Collectors.toList());
     }
 
     public long getId() {

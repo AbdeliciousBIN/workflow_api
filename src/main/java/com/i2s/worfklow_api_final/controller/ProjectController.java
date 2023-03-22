@@ -56,6 +56,7 @@ public class ProjectController {
     public ResponseEntity<?> createProject(@RequestBody ProjectDTO projectDTO) {
         try {
             ProjectDTO createdProject = projectService.saveProject(projectDTO);
+            System.out.println(createdProject);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdProject);
         } catch (DataIntegrityViolationException e) {
             // handle database constraint violation error
@@ -65,6 +66,7 @@ public class ProjectController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
         } catch (Exception e) {
             // handle any other unexpected error
+            System.out.println(e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
         }
     }

@@ -48,8 +48,7 @@ public class ProjectService {
     }
 
     public ProjectDTO saveProject(@Valid ProjectDTO projectDTO) {
-
-        return new ProjectDTO(projectRepository.save(new Project(projectDTO)));
+        return  new ProjectDTO(projectRepository.save(new Project(projectDTO)));
     }
 
     public void deleteProjectById(long id) {

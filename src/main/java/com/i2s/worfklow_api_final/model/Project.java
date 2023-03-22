@@ -33,10 +33,11 @@ public class Project {
     }
 
     public Project(ProjectDTO projectDTO) {
-        this.id = projectDTO.getId();
+        if(projectDTO.getId() == 0) this.id = projectDTO.getId();
         this.projectName = projectDTO.getProjectName();
         this.description = projectDTO.getDescription();
-        this.phases = projectDTO.getPhases().stream().map(Phase::new).collect(Collectors.toList());
+        if( projectDTO.getPhases() !=null) this.phases = projectDTO.getPhases().stream().map(Phase::new).collect(Collectors.toList());
+
     }
 
     public List<Phase> getPhases() {

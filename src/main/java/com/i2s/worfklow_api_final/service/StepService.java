@@ -41,7 +41,7 @@ public class StepService {
         return new StepDTO(stepRepository.save(new Step(stepDTO)));
     }
 
-    public StepDTO updateStep(long id, @Valid StepDTO newStepDTO) {
+    public StepDTO updateStep(long id,  @Valid StepDTO newStepDTO) {
         Step updatedStep = stepRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Step with ID " + id + " not found"));
         updatedStep.setStepName(newStepDTO.getStepName());
         updatedStep.setDescription(newStepDTO.getDescription());
