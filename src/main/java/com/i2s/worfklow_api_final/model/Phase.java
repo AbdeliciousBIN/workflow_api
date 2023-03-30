@@ -1,12 +1,19 @@
 package com.i2s.worfklow_api_final.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.i2s.worfklow_api_final.dto.PhaseDTO;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.util.List;
 
 @Entity
+@Getter
+@Setter
+@EqualsAndHashCode
+@ToString
 @Table(name = "phases")
 public class Phase {
     @Id
@@ -16,7 +23,7 @@ public class Phase {
     @Column(nullable = false, name = "phase_name")
     private String phaseName;
 
-    @Column(name = "description")
+
     private String description;
 
 
@@ -32,71 +39,11 @@ public class Phase {
     }
 
     public Phase(PhaseDTO phaseDTO) {
-        if(phaseDTO.getId() !=0 )this.id = phaseDTO.getId();
+        if (phaseDTO.getId() != 0) this.id = phaseDTO.getId();
         this.phaseName = phaseDTO.getPhaseName();
         this.description = phaseDTO.getDescription();
-//        this.project = phaseDTO.getProject();
-//        this.steps = phaseDTO.getSteps();
+
     }
 
-    public long getId() {
-        return id;
-    }
-
-    public void setId(long id) {
-        this.id = id;
-    }
-
-    public String getPhaseName() {
-        return phaseName;
-    }
-
-    public void setPhaseName(String phaseName) {
-        this.phaseName = phaseName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public List<Step> getSteps() {
-        return steps;
-    }
-
-    public void setSteps(List<Step> steps) {
-        this.steps = steps;
-    }
-
-    public Project getProject() {
-        return project;
-    }
-
-    public void setProject(Project project) {
-        this.project = project;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Phase phase = (Phase) o;
-
-        return getId() == phase.getId();
-    }
-
-    @Override
-    public int hashCode() {
-        return (int) (getId() ^ (getId() >>> 32));
-    }
-
-    @Override
-    public String toString() {
-        return "Phase [id=" + id + ", phaseName=" + phaseName + ", description=" + description + "]";
-    }
 
 }

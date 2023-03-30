@@ -6,26 +6,24 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
-import java.util.List;
 
 @Entity
 @Getter
 @Setter
 @EqualsAndHashCode
-
-@Table(name = "jobs")
-public class Job {
+@ToString
+@Table(name = "parameters")
+public class Parameter {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @Column(nullable = false, name = "title")
-    private String title;
+    @Column(nullable = false,name = "parameter_name")
+    private String parameterName;
 
+    @Column(nullable = false,name = "parameter_type")
+    private String parameterType;
 
-    @OneToMany(mappedBy = "job", cascade = CascadeType.ALL)
-    private List<User> users;
-
-    public Job() {
+    public Parameter() {
     }
 
 

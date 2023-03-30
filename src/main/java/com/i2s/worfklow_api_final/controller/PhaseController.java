@@ -31,9 +31,9 @@ public class PhaseController {
 
     @GetMapping("/{id}")
     public ResponseEntity<PhaseDTO> getPhaseById(@PathVariable long id) {
-        Optional<PhaseDTO> phaseDTO = phaseService.getPhaseById(id);
-        if (phaseDTO.isPresent()) return ResponseEntity.ok(phaseDTO.get());
-        return ResponseEntity.notFound().build();
+        return phaseService.getPhaseById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/idByNameAndProjectName")

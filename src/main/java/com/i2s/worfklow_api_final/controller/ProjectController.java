@@ -31,9 +31,9 @@ public class ProjectController {
 
     @GetMapping("/{id}")
     public ResponseEntity<ProjectDTO> getProjectById(@PathVariable Long id) {
-        Optional<ProjectDTO> projectDTO = projectService.getProjectById(id);
-        if (projectDTO.isPresent()) return ResponseEntity.ok(projectDTO.get());
-        return ResponseEntity.notFound().build();
+        return projectService.getProjectById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/idByName")

@@ -31,9 +31,9 @@ public class StepController {
 
     @GetMapping("/{id}")
     public ResponseEntity<StepDTO> getStepById(@PathVariable Long id) {
-        Optional<StepDTO> stepDTO = stepService.getStepById(id);
-        if (stepDTO.isPresent()) return ResponseEntity.ok(stepDTO.get());
-        return ResponseEntity.notFound().build();
+        return stepService.getStepById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/phase/{id}")
