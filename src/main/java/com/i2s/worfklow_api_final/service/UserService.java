@@ -1,7 +1,9 @@
 package com.i2s.worfklow_api_final.service;
 
+import com.i2s.worfklow_api_final.dto.JobDTO;
 import com.i2s.worfklow_api_final.dto.UserDTO;
 import com.i2s.worfklow_api_final.model.Job;
+import com.i2s.worfklow_api_final.model.Project;
 import com.i2s.worfklow_api_final.model.User;
 import com.i2s.worfklow_api_final.repository.JobRepository;
 import com.i2s.worfklow_api_final.repository.UserRepository;
@@ -37,12 +39,7 @@ public class UserService {
         return userRepository.findById(id).map(user -> modelMapper.map(user, UserDTO.class));
     }
 
-    //    public UserDTO createStep(@Valid TaskDTO taskDTO) {
-//        Long stepId = Optional.ofNullable(taskDTO).map(TaskDTO::getStepId).orElseThrow(() -> new IllegalArgumentException("TaskDTO is null or doesn't have a stepId field"));
-//        Step step = stepRepository.findById(stepId).orElseThrow(() -> new EntityNotFoundException("Step with ID " + stepId + " not found"));
-//        Task task = new Task();
-//        task.setTaskName(taskDTO.getTaskName());
-//    }
+
     public UserDTO createUser(@Valid UserDTO userDTO) {
         User user = modelMapper.map(userDTO, User.class);
         // Set the Job for the user (if jobId is provided)
@@ -50,6 +47,29 @@ public class UserService {
         user.setJob(job);
         User savedUser = userRepository.save(user);
         return modelMapper.map(savedUser, UserDTO.class);
-
     }
+
+    public void deleteUser(long id ){
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("User with ID " + id + " not found."));
+        userRepository.deleteById(id);
+    }
+
+    public Optional<JobDTO> getJobByUserId(long id) {
+        return userRepository.findById(id)
+                .map(User::getJob)
+                .map(job -> {
+                    JobDTO jobDTO = modelMapper.map(job, JobDTO.class);
+                    List<Long> userIds = job.getUsers().stream().map(User::getId).collect(Collectors.toList());
+                    jobDTO.setUsersId(userIds);
+                    return jobDTO;
+                });
+    }
+
+    public UserDTO getUserByFullName(String fullName) {
+        User user = userRepository.findByFullName(fullName)
+                .orElseThrow(() -> new EntityNotFoundException("User with name '" + fullName + "' not found."));
+        return modelMapper.map(user, UserDTO.class);
+    }
+
 }

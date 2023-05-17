@@ -23,10 +23,6 @@ public class JobDTO {
     public JobDTO() {
     }
 
-//    public JobDTO(Job job) {
-//        this.id = job.getId();
-//        this.title = job.getTitle();
-//        if (!usersId.isEmpty()) job.getUsers().stream().map(User::getId).collect(Collectors.toList());
-//    }
+
 
 }

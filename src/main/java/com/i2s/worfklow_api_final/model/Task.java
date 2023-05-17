@@ -1,6 +1,7 @@
 package com.i2s.worfklow_api_final.model;
 
 
+import com.i2s.worfklow_api_final.enums.TaskStatus;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -24,7 +25,8 @@ public class Task {
     private String taskName;
 
     private String description;
-
+    private String instructions;
+    private boolean requiredVerification;
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "step_id")
     private Step step;
@@ -47,6 +49,12 @@ public class Task {
 
     @ManyToMany(mappedBy = "parentTasks")
     private List<Task> childTasks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MethodExecution> methodExecutions = new ArrayList<>();
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    private TaskStatus status;
 
     public Task() {
 

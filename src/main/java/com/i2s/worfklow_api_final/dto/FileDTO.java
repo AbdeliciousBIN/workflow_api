@@ -25,14 +25,6 @@ public class FileDTO {
     public FileDTO() {
     }
 
-    public FileDTO(File file) {
-        this.id = file.getId();
-        this.fileName = file.getFileName();
-        this.filePath = file.getFilePath();
-        this.size = file.getSize();
-        this.contentType = file.getContentType();
-        this.uploadDateTime = file.getUploadDateTime();
-        this.taskIds = file.getTasks().stream().map(Task::getId).collect(Collectors.toList());
-    }
+
 
 }

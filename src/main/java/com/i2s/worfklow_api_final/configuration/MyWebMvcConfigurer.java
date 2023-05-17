@@ -12,6 +12,9 @@ public class MyWebMvcConfigurer implements WebMvcConfigurer {
         registry.addMapping("/**")
                 .allowedOrigins("http://localhost:4200/")
                 .allowedMethods("*")
-                .allowedHeaders("*");
+                .allowedHeaders("*")
+                .exposedHeaders("X-File-Extension")
+                .allowCredentials(true)
+                .maxAge(3600);
     }
 }

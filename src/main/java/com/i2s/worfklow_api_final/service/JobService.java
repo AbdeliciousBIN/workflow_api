@@ -2,12 +2,14 @@ package com.i2s.worfklow_api_final.service;
 
 import com.i2s.worfklow_api_final.dto.JobDTO;
 import com.i2s.worfklow_api_final.model.Job;
+import com.i2s.worfklow_api_final.model.Method;
 import com.i2s.worfklow_api_final.model.User;
 import com.i2s.worfklow_api_final.repository.JobRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
@@ -45,5 +47,10 @@ public class JobService {
         Job job = modelMapper.map(jobDTO, Job.class);
         Job savedJob = jobRepository.save(job);
         return modelMapper.map(savedJob, JobDTO.class);
+    }
+
+    public void deleteJob(long id ){
+        Job job = jobRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Job with ID " + id + " not found."));
+        jobRepository.deleteById(id);
     }
 }
