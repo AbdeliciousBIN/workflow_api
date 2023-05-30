@@ -5,8 +5,11 @@ import com.i2s.worfklow_api_final.dto.PhaseDTO;
 import com.i2s.worfklow_api_final.dto.ProjectDTO;
 import com.i2s.worfklow_api_final.model.Phase;
 import com.i2s.worfklow_api_final.model.Project;
+import com.i2s.worfklow_api_final.model.Task;
 import com.i2s.worfklow_api_final.repository.PhaseRepository;
 import com.i2s.worfklow_api_final.repository.ProjectRepository;
+import com.i2s.worfklow_api_final.repository.TaskRepository;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,12 +23,14 @@ import java.util.stream.Collectors;
 public class ProjectService {
     private final ProjectRepository projectRepository;
     private final PhaseRepository phaseRepository;
+    private final TaskRepository taskRepository;
 
 
     @Autowired
-    public ProjectService(ProjectRepository projectRepository, PhaseRepository phaseRepository) {
+    public ProjectService(ProjectRepository projectRepository, PhaseRepository phaseRepository, TaskRepository taskRepository, ModelMapper modelMapper) {
         this.projectRepository = projectRepository;
         this.phaseRepository = phaseRepository;
+        this.taskRepository = taskRepository;
 
     }
 
@@ -48,7 +53,7 @@ public class ProjectService {
     }
 
     public ProjectDTO saveProject(@Valid ProjectDTO projectDTO) {
-        return  new ProjectDTO(projectRepository.save(new Project(projectDTO)));
+        return new ProjectDTO(projectRepository.save(new Project(projectDTO)));
     }
 
     public void deleteProjectById(long id) {
@@ -61,7 +66,7 @@ public class ProjectService {
         project.setProjectName(newProjectDTO.getProjectName());
         project.setDescription(newProjectDTO.getDescription());
         Project updatedProject = projectRepository.save(project);
-       return new ProjectDTO(updatedProject);
+        return new ProjectDTO(updatedProject);
     }
 
     public void deleteProject(long id) {
@@ -78,4 +83,11 @@ public class ProjectService {
             throw new EntityNotFoundException("Project with Name" + projectName + "not found.");
         }
     }
+
+    public ProjectDTO getProjectByTaskId(long id) {
+        Task task = taskRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Task with ID " + id + " not found."));
+        Project project = task.getStep().getPhase().getProject();
+        return new ProjectDTO(project);
+    }
+
 }

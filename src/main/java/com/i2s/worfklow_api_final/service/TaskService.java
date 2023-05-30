@@ -1,8 +1,6 @@
 package com.i2s.worfklow_api_final.service;
 
-import com.i2s.worfklow_api_final.dto.MethodExecutionDTO;
-import com.i2s.worfklow_api_final.dto.TaskDTO;
-import com.i2s.worfklow_api_final.dto.UserParameterDTO;
+import com.i2s.worfklow_api_final.dto.*;
 import com.i2s.worfklow_api_final.enums.TaskStatus;
 import com.i2s.worfklow_api_final.model.*;
 import com.i2s.worfklow_api_final.repository.*;
@@ -13,6 +11,7 @@ import org.springframework.stereotype.Service;
 import javax.persistence.EntityNotFoundException;
 import javax.validation.Valid;
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -25,10 +24,14 @@ public class TaskService {
     private final StepRepository stepRepository;
     private final ActionService actionService;
     private final MethodExecutionRepository methodExecutionRepository;
+    private final FeedbackRepository feedbackRepository;
+    private final UserRepository userRepository;
+    private final ProjectRepository projectRepository;
+    private final NotificationRepository notificationRepository;
     private final ModelMapper modelMapper;
 
     @Autowired
-    public TaskService(TaskRepository taskRepository, FileRepository fileRepository, MethodRepository methodRepository, JobRepository jobRepository, StepRepository stepRepository, ActionService actionService, MethodExecutionRepository methodExecutionRepository, ModelMapper modelMapper) {
+    public TaskService(TaskRepository taskRepository, FileRepository fileRepository, MethodRepository methodRepository, JobRepository jobRepository, StepRepository stepRepository, ActionService actionService, MethodExecutionRepository methodExecutionRepository, FeedbackRepository feedbackRepository, UserRepository userRepository, ProjectRepository projectRepository, NotificationRepository notificationRepository, ModelMapper modelMapper) {
         this.taskRepository = taskRepository;
         this.fileRepository = fileRepository;
         this.methodRepository = methodRepository;
@@ -36,6 +39,10 @@ public class TaskService {
         this.stepRepository = stepRepository;
         this.actionService = actionService;
         this.methodExecutionRepository = methodExecutionRepository;
+        this.feedbackRepository = feedbackRepository;
+        this.userRepository = userRepository;
+        this.projectRepository = projectRepository;
+        this.notificationRepository = notificationRepository;
         this.modelMapper = modelMapper;
     }
 
@@ -141,6 +148,20 @@ public class TaskService {
             return taskDTO;
         }).collect(Collectors.toList());
     }
+    public List<TaskDTO> getTasksByProject(long projectId) {
+        List<Task> tasks = taskRepository.findByProjectId(projectId);
+
+        return tasks.stream().map(task -> {
+            TaskDTO taskDTO = modelMapper.map(task, TaskDTO.class);
+            taskDTO.setStatus(task.getStatus());
+            taskDTO.setFileIds(task.getFiles().stream().map(File::getId).collect(Collectors.toList()));
+            taskDTO.setMethodIds(task.getMethods().stream().map(Method::getId).collect(Collectors.toList()));
+            taskDTO.setAssignedJobIds(task.getAssignedJobs().stream().map(Job::getId).collect(Collectors.toList()));
+            taskDTO.setParentTaskIds(task.getParentTasks().stream().map(Task::getId).collect(Collectors.toList()));
+            taskDTO.setChildTaskIds(task.getChildTasks().stream().map(Task::getId).collect(Collectors.toList()));
+            return taskDTO;
+        }).collect(Collectors.toList());
+    }
 
     public TaskDTO updateTaskStatus(long id, @Valid TaskStatus newStatus) {
         Task task = taskRepository.findById(id).orElseThrow(() -> new EntityNotFoundException("Task with ID " + id + " not found."));
@@ -169,6 +190,9 @@ public class TaskService {
             for (Task childTask : childTasks) {
                 if (childTask.getStatus() == TaskStatus.PENDING) {
                     childTask.setStatus(TaskStatus.STARTING);
+                    childTask.setStartedAt(LocalDateTime.now());
+                    createNotificationsForTask(childTask, "The task '" + childTask.getTaskName() + "' has started.");
+
                     Task startedTask = taskRepository.save(childTask);
                     startedTaskDTO = modelMapper.map(startedTask, TaskDTO.class);
                     break;
@@ -180,18 +204,20 @@ public class TaskService {
 
     }
 
-    public List<TaskDTO> startInitialTasks(long stepId) {
-        Step step = stepRepository.findById(stepId).orElseThrow(() -> new EntityNotFoundException("Step with ID " + stepId + " not found."));
-        List<Task> initialTasks = taskRepository.findByStep(step).stream().filter(task -> task.getParentTasks().isEmpty()).collect(Collectors.toList());
+    public List<TaskDTO> startInitialTasks(long projectId) {
+        Project project = projectRepository.findById(projectId).orElseThrow(() -> new EntityNotFoundException("Project with ID " + projectId + " not found."));
+        List<Task> initialTasks = taskRepository.findByProjectId(project.getId()).stream().filter(task -> task.getParentTasks().isEmpty()).collect(Collectors.toList());
 
         List<TaskDTO> startedInitialTasks = new ArrayList<>();
 
         for (Task task : initialTasks) {
             if (task.getStatus() == TaskStatus.PENDING) {
                 task.setStatus(TaskStatus.STARTING);
+                task.setStartedAt(LocalDateTime.now());
                 Task startedTask = taskRepository.save(task);
                 TaskDTO startedTaskDTO = modelMapper.map(startedTask, TaskDTO.class);
                 startedInitialTasks.add(startedTaskDTO);
+                createNotificationsForTask(task, "The task '" + task.getTaskName() + "' has started.");
             }
         }
 
@@ -199,23 +225,14 @@ public class TaskService {
     }
 
 
-    public List<TaskDTO> getTasksByJobIdsStatusProjectPhaseStep(List<Long> jobIds, TaskStatus status, Long projectId, Long phaseId, Long stepId) {
+    public List<TaskDTO> getTasksByJobIdsStatusProjectPhaseStep(List<Long> jobIds, List<TaskStatus> statusList, Long projectId, Long phaseId, Long stepId) {
 
         List<Task> allTasks = taskRepository.findAll();
 
-        List<TaskDTO> taskDTOs = allTasks.stream()
-                .filter(task -> task.getAssignedJobs().stream().anyMatch(job -> jobIds.contains(job.getId()))
-                        && task.getStatus().equals(status)
-                        && (projectId == null || (task.getStep() != null && task.getStep().getPhase() != null && task.getStep().getPhase().getProject() != null && projectId.equals(task.getStep().getPhase().getProject().getId())))
-                        && (phaseId == null || (task.getStep() != null && task.getStep().getPhase() != null && phaseId.equals(task.getStep().getPhase().getId())))
-                        && (stepId == null || (task.getStep() != null && stepId.equals(task.getStep().getId()))))
-                .map(task -> modelMapper.map(task, TaskDTO.class))
-                .collect(Collectors.toList());
+        List<TaskDTO> taskDTOs = allTasks.stream().filter(task -> task.getAssignedJobs().stream().anyMatch(job -> jobIds.contains(job.getId())) && statusList.contains(task.getStatus()) && (projectId == null || (task.getStep() != null && task.getStep().getPhase() != null && task.getStep().getPhase().getProject() != null && projectId.equals(task.getStep().getPhase().getProject().getId()))) && (phaseId == null || (task.getStep() != null && task.getStep().getPhase() != null && phaseId.equals(task.getStep().getPhase().getId()))) && (stepId == null || (task.getStep() != null && stepId.equals(task.getStep().getId())))).map(task -> modelMapper.map(task, TaskDTO.class)).collect(Collectors.toList());
 
         return taskDTOs;
     }
-
-
 
 
     public List<MethodExecutionDTO> getMethodExecutionsByTaskId(long taskId) {
@@ -241,10 +258,14 @@ public class TaskService {
         // If task does not have a child task, set its status to FINISHED, regardless of its verification requirement
         if (task.getChildTasks() == null || task.getChildTasks().isEmpty()) {
             task.setStatus(TaskStatus.FINISHED);
+            task.setFinishedAt(LocalDateTime.now());
             // Start child tasks if they exist and are pending
             task.getChildTasks().forEach(childTask -> {
                 if (childTask.getStatus() == TaskStatus.PENDING) {
                     childTask.setStatus(TaskStatus.STARTING);
+                    childTask.setStartedAt(LocalDateTime.now());
+                    createNotificationsForTask(childTask, "The task '" + childTask.getTaskName() + "' has started.");
+
                 }
             });
         }
@@ -252,12 +273,17 @@ public class TaskService {
         else {
             if (task.isRequiredVerification()) {
                 task.setStatus(TaskStatus.WAITING_FOR_VALIDATION);
+                createNotificationsForValidation(task, "Task " + task.getTaskName() + " is waiting for validation.");
             } else {
                 task.setStatus(TaskStatus.FINISHED);
+                task.setFinishedAt(LocalDateTime.now());
                 // Start child tasks if they exist and are pending
                 task.getChildTasks().forEach(childTask -> {
                     if (childTask.getStatus() == TaskStatus.PENDING) {
                         childTask.setStatus(TaskStatus.STARTING);
+                        childTask.setStartedAt(LocalDateTime.now());
+                        createNotificationsForTask(childTask, "The task '" + childTask.getTaskName() + "' has started.");
+
                     }
                 });
             }
@@ -328,11 +354,14 @@ public class TaskService {
             throw new IllegalStateException("Task status must be WAITING_FOR_VALIDATION to validate.");
 
         task.setStatus(TaskStatus.FINISHED);
+        task.setFinishedAt(LocalDateTime.now());
 
         // Start child tasks if their status is PENDING
         task.getChildTasks().forEach(childTask -> {
             if (childTask.getStatus() == TaskStatus.PENDING) {
                 childTask.setStatus(TaskStatus.STARTING);
+                childTask.setStartedAt(LocalDateTime.now());
+                createNotificationsForTask(childTask, "Task" + task.getTaskName() + " is starting.");
             }
         });
 
@@ -341,9 +370,13 @@ public class TaskService {
 
     public void invalidateTask(long taskId) {
         Task task = taskRepository.findById(taskId).orElseThrow(() -> new EntityNotFoundException("Task not found with ID: " + taskId));
+        System.out.println("TASK STATUS : " + task.getStatus());
+        System.out.println("TASK id : " + task.getId());
         if (task.getStatus() != TaskStatus.WAITING_FOR_VALIDATION)
             throw new IllegalStateException("Task status must be WAITING_FOR_VALIDATION.");
-        task.setStatus(TaskStatus.PENDING);
+        task.setStatus(TaskStatus.STARTING);
+        task.setStartedAt(LocalDateTime.now());
+        createNotificationsForTask(task, "The task '" + task.getTaskName() + "' has been invalidated. Please review.");
         taskRepository.save(task);
     }
 
@@ -356,11 +389,7 @@ public class TaskService {
         List<Task> filteredTasks = tasks.stream().filter(task -> task.getChildTasks().stream().anyMatch(childTask -> childTask.getAssignedJobs().stream().anyMatch(job -> job.getId() == jobId))).collect(Collectors.toList());
 
         // Apply filters for projectId, phaseId, and stepId if they are not null
-        List<Task> filteredTasksByProjectPhaseStep = filteredTasks.stream()
-                .filter(task -> projectId == null || (task.getStep() != null && task.getStep().getPhase() != null && task.getStep().getPhase().getProject() != null && projectId.equals(task.getStep().getPhase().getProject().getId())))
-                .filter(task -> phaseId == null || (task.getStep() != null && task.getStep().getPhase() != null && phaseId.equals(task.getStep().getPhase().getId())))
-                .filter(task -> stepId == null || (task.getStep() != null && stepId.equals(task.getStep().getId())))
-                .collect(Collectors.toList());
+        List<Task> filteredTasksByProjectPhaseStep = filteredTasks.stream().filter(task -> projectId == null || (task.getStep() != null && task.getStep().getPhase() != null && task.getStep().getPhase().getProject() != null && projectId.equals(task.getStep().getPhase().getProject().getId()))).filter(task -> phaseId == null || (task.getStep() != null && task.getStep().getPhase() != null && phaseId.equals(task.getStep().getPhase().getId()))).filter(task -> stepId == null || (task.getStep() != null && stepId.equals(task.getStep().getId()))).collect(Collectors.toList());
 
         // Convert to DTOs
         List<TaskDTO> taskDTOs = filteredTasksByProjectPhaseStep.stream().map(task -> modelMapper.map(task, TaskDTO.class)).collect(Collectors.toList());
@@ -368,5 +397,61 @@ public class TaskService {
         return taskDTOs;
     }
 
+    public TaskDTO addFeedback(long taskId, @Valid FeedbackDTO feedbackDTO) {
+        Task task = taskRepository.findById(taskId)
+                .orElseThrow(() -> new EntityNotFoundException("Task with ID " + taskId + " not found."));
+
+        User user = userRepository.findById(feedbackDTO.getUserId())
+                .orElseThrow(() -> new EntityNotFoundException("User with ID " + feedbackDTO.getUserId() + " not found."));
+
+        Feedback feedback = modelMapper.map(feedbackDTO, Feedback.class);
+        feedback.setTask(task);
+        feedback.setUser(user);
+        feedback.setFeedbackDate(LocalDateTime.now());
+        feedbackRepository.save(feedback);
+
+        // Add the feedback to the task's list of feedbacks
+        task.getFeedbacks().add(feedback);
+
+        Task updatedTask = taskRepository.save(task);
+        return modelMapper.map(updatedTask, TaskDTO.class);
+    }
+
+    private void createNotificationsForTask(Task task, String message) {
+        for (Job job : task.getAssignedJobs()) {
+            for (User user : job.getUsers()) {
+                // Create a new notification for each user assigned to the job
+                Notification notification = new Notification();
+                notification.setTask(task);
+                notification.setUser(user);
+                notification.setMessage(message);
+                notification.setRead(false);
+
+                // Save the notification to the database
+                notificationRepository.save(notification);
+            }
+        }
+    }
+
+
+    private void createNotificationsForValidation(Task task, String message) {
+        if (task.getChildTasks() != null) {
+            for (Task childTask : task.getChildTasks()) {
+                for (Job job : childTask.getAssignedJobs()) {
+                    for (User user : job.getUsers()) {
+                        // Create a new notification for each user assigned to the job of the child task
+                        Notification notification = new Notification();
+                        notification.setTask(childTask);
+                        notification.setUser(user);
+                        notification.setMessage(message);
+                        notification.setRead(false);
+
+                        // Save the notification to the database
+                        notificationRepository.save(notification);
+                    }
+                }
+            }
+        }
+    }
 
 }

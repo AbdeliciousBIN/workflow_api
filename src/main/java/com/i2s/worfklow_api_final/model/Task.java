@@ -8,6 +8,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +57,18 @@ public class Task {
     @Enumerated(EnumType.STRING)
     private TaskStatus status;
 
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Feedback> feedbacks = new ArrayList<>();
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    private LocalDateTime startedAt;
+    private LocalDateTime finishedAt;
     public Task() {
 
+    }
+    @PrePersist
+    public void prePersist() {
+        createdAt = LocalDateTime.now();
     }
 }

@@ -9,6 +9,7 @@
     import lombok.Setter;
     import lombok.ToString;
 
+    import java.time.LocalDateTime;
     import java.util.List;
     import java.util.stream.Collectors;
 
@@ -31,6 +32,10 @@
         private List<MethodExecutionDTO> methodExecutions;
 
         private TaskStatus status;
+        private List<FeedbackDTO> feedbacks;
+        private LocalDateTime createdAt;
+        private LocalDateTime startedAt;
+        private LocalDateTime finishedAt;
 
         public TaskDTO() {
         }

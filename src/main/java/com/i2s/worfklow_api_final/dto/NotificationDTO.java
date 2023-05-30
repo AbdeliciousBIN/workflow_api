@@ -1,6 +1,7 @@
 package com.i2s.worfklow_api_final.dto;
 
-import com.i2s.worfklow_api_final.enums.TaskStatus;
+import com.i2s.worfklow_api_final.model.Task;
+import com.i2s.worfklow_api_final.model.User;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,12 +11,13 @@ import lombok.ToString;
 @Setter
 @EqualsAndHashCode
 @ToString
-public class MethodExecutionDTO {
+public class NotificationDTO {
     private long id;
+    private String message;
+    private long userId;
     private long taskId;
-    private long methodId;
-    private boolean executed;
+    private boolean read;
 
-    public MethodExecutionDTO() {
-    }
+    public NotificationDTO(){}
+
 }

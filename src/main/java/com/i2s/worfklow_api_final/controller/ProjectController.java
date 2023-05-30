@@ -51,6 +51,23 @@ public class ProjectController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
         }
     }
+    @GetMapping("/task/{taskId}")
+    public ResponseEntity<?> getProjectByTaskId(@PathVariable long taskId) {
+        try {
+            ProjectDTO project = projectService.getProjectByTaskId(taskId);
+            return ResponseEntity.ok(project);
+        } catch (EntityNotFoundException e) {
+            // handle task not found error
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task with ID " + taskId + " not found.");
+        } catch (IllegalArgumentException e) {
+            // handle invalid input data error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
+        } catch (Exception e) {
+            // handle any other unexpected error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+        }
+    }
+
 
     @PostMapping
     public ResponseEntity<?> createProject(@RequestBody ProjectDTO projectDTO) {

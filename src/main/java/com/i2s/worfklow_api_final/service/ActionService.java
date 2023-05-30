@@ -100,5 +100,7 @@ public class ActionService {
         }
     }
 
-    public void test(int a, String b){}
+   public void ridil(int tkhbi9a, String chiL3ba){
+
+   }
 }

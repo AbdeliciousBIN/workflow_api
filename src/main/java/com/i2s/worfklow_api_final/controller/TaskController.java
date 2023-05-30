@@ -1,5 +1,6 @@
 package com.i2s.worfklow_api_final.controller;
 
+import com.i2s.worfklow_api_final.dto.FeedbackDTO;
 import com.i2s.worfklow_api_final.dto.MethodExecutionDTO;
 import com.i2s.worfklow_api_final.dto.TaskDTO;
 import com.i2s.worfklow_api_final.dto.UserParameterDTO;
@@ -37,9 +38,9 @@ public class TaskController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<TaskDTO>> getTasksByJobIdsStatusProjectPhaseStep(@RequestParam("jobIds") List<Long> jobIds, @RequestParam("status") TaskStatus status, @RequestParam(value = "projectId", required = false) Long projectId, @RequestParam(value = "phaseId", required = false) Long phaseId, @RequestParam(value = "stepId", required = false) Long stepId) {
+    public ResponseEntity<List<TaskDTO>> getTasksByJobIdsStatusProjectPhaseStep(@RequestParam("jobIds") List<Long> jobIds, @RequestParam("status") List<TaskStatus> statusList, @RequestParam(value = "projectId", required = false) Long projectId, @RequestParam(value = "phaseId", required = false) Long phaseId, @RequestParam(value = "stepId", required = false) Long stepId) {
 
-        return ResponseEntity.ok(taskService.getTasksByJobIdsStatusProjectPhaseStep(jobIds, status, projectId, phaseId, stepId));
+        return ResponseEntity.ok(taskService.getTasksByJobIdsStatusProjectPhaseStep(jobIds, statusList, projectId, phaseId, stepId));
     }
 
 
@@ -120,11 +121,28 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
         }
     }
-
-    @PostMapping("/{stepId}/startInitialTasks")
-    public ResponseEntity<List<TaskDTO>> startInitialTasks(@PathVariable long stepId) {
+    @GetMapping("/project/{projectId}")
+    public ResponseEntity<?> getTasksByProject(@PathVariable long projectId) {
         try {
-            return ResponseEntity.status(HttpStatus.OK).body(taskService.startInitialTasks(stepId));
+            List<TaskDTO> tasks = taskService.getTasksByProject(projectId);
+            return ResponseEntity.ok(tasks);
+        } catch (EntityNotFoundException e) {
+            // handle project not found error
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Project with ID " + projectId + " not found.");
+        } catch (IllegalArgumentException e) {
+            // handle invalid input data error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
+        } catch (Exception e) {
+            // handle any other unexpected error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+        }
+    }
+
+
+    @PostMapping("/{projectId}/startInitialTasks")
+    public ResponseEntity<List<TaskDTO>> startInitialTasks(@PathVariable long projectId) {
+        try {
+            return ResponseEntity.status(HttpStatus.OK).body(taskService.startInitialTasks(projectId));
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         } catch (Exception e) {
@@ -172,7 +190,7 @@ public class TaskController {
     public ResponseEntity<?> validateAndStartChildTasks(@PathVariable long taskId) {
         try {
             taskService.validateAndStartChildTasks(taskId);
-            return ResponseEntity.status(HttpStatus.OK).body("Task validation and child task starting successful.");
+            return ResponseEntity.status(HttpStatus.OK).build();
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task with ID " + taskId + " not found.");
         } catch (IllegalStateException e) {
@@ -187,7 +205,7 @@ public class TaskController {
     public ResponseEntity<?> invalidateTask(@PathVariable long taskId) {
         try {
             taskService.invalidateTask(taskId);
-            return ResponseEntity.status(HttpStatus.OK).body("Task invalidation successful.");
+            return ResponseEntity.status(HttpStatus.OK).build();
         } catch (EntityNotFoundException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task with ID " + taskId + " not found.");
         } catch (IllegalStateException e) {
@@ -197,4 +215,29 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
         }
     }
+
+    @PostMapping("/{taskId}/feedbacks")
+    public ResponseEntity<?> addFeedback(@PathVariable long taskId, @RequestBody FeedbackDTO feedbackDTO) {
+        try {
+            taskService.addFeedback(taskId, feedbackDTO);
+            return ResponseEntity.status(HttpStatus.OK).build();
+        } catch (EntityNotFoundException e) {
+            // handle task not found error
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Task not found with ID: " + taskId);
+        } catch (DataIntegrityViolationException e) {
+            // handle database constraint violation error
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
+        } catch (IllegalArgumentException e) {
+            // handle invalid input data error
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
+        } catch (Exception e) {
+            // handle any other unexpected error
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+        }
+    }
+
+
 }

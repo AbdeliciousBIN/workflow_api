@@ -24,18 +24,5 @@ public class UserDTO {
     public UserDTO() {
     }
 
-//    public UserDTO(User user) {
-//        this.id = user.getId();
-//        this.fullName = user.getFullName();
-//        this.email = user.getEmail();
-//        this.role = user.getRole();
-//        this.passwordHash = user.getPasswordHash();
-//        this.phoneNumber = user.getPhoneNumber();
-//        this.address = user.getAddress();
-//        this.profilePicture = user.getProfilePicture();
-//        if (user.getJob() != null) this.jobId = user.getJob().getId();
-//
-//
-//    }
 
 }
