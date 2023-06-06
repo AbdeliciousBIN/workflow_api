@@ -133,6 +133,9 @@ public class StatisticsService {
     public long getCountForStepsInPhase(long phaseId) {
         return stepRepository.countStepsInPhase(phaseId);
     }
+    public long getCountForStepsInProject(long projectId){
+        return stepRepository.countStepsInProject(projectId);
+    }
 
     public long getCountForAllUsers() {
         return userRepository.countUsers();

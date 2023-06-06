@@ -22,4 +22,6 @@ public interface StepRepository extends JpaRepository<Step, Long> {
 
     @Query("SELECT count(s) FROM Step s WHERE s.phase.id = :phaseId")
     long countStepsInPhase(@Param("phaseId") long phaseId);
+    @Query("SELECT count(s) FROM Step s WHERE s.phase.project.id=:projectId")
+    long countStepsInProject(@Param("projectId") long projectId);
 }

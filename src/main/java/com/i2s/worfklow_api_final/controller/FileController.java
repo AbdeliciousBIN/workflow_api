@@ -36,6 +36,11 @@ public class FileController {
         return fileService.getFileById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
+    @GetMapping("/project/{projectId}")
+    public ResponseEntity<List<FileDTO>> getFileByProject(@PathVariable long projectId) {
+        return ResponseEntity.ok(fileService.getFilesByProject(projectId));
+    }
+
     @PostMapping
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
         try {

@@ -39,7 +39,10 @@ public class ActionService {
 
     // Registers methods during initialization
     private void registerMethods() {
-        List<Method> actionMethods = Arrays.stream(getClass().getDeclaredMethods()).filter(method -> !method.isSynthetic()).map(this::createMethodFromReflection).collect(Collectors.toList());
+        List<String> excludedMethods = Arrays.asList("init", "registerMethods", "createMethodFromReflection");
+        List<Method> actionMethods = Arrays.stream(getClass().getDeclaredMethods())
+                .filter(method -> !method.isSynthetic() && !excludedMethods.contains(method.getName()))
+                .map(this::createMethodFromReflection).collect(Collectors.toList());
         List<Method> existingMethods = methodRepository.findAll();
 
         // Remove methods that are no longer present in the ActionService class
@@ -56,6 +59,7 @@ public class ActionService {
             }
         }
     }
+
 
     // Creates a Method entity with associated Parameter entities based on a java.lang.reflect.Method
     private Method createMethodFromReflection(java.lang.reflect.Method method) {
@@ -100,7 +104,7 @@ public class ActionService {
         }
     }
 
-   public void ridil(int tkhbi9a, String chiL3ba){
+    public void ridil(int tkhbi9a, String chiL3ba) {
 
-   }
+    }
 }

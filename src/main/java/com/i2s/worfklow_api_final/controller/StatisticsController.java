@@ -214,6 +214,16 @@ public class StatisticsController {
         }
     }
 
+    @GetMapping("/count/stepsInProject/{projectId}")
+    public ResponseEntity<?> getCountForStepsInProject(@PathVariable long projectId) {
+        try {
+            return ResponseEntity.ok(statisticsService.getCountForStepsInProject(projectId));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+        }
+    }
+
     @GetMapping("/count/allUsers")
     public ResponseEntity<?> getCountForAllUsers() {
         try {
