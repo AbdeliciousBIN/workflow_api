@@ -1,6 +1,10 @@
 package com.i2s.worfklow_api_final.service;
 
-import com.i2s.worfklow_api_final.dto.*;
+import com.i2s.worfklow_api_final.dto.FeedbackDTO;
+import com.i2s.worfklow_api_final.dto.MethodExecutionDTO;
+import com.i2s.worfklow_api_final.dto.TaskDTO;
+import com.i2s.worfklow_api_final.dto.UserParameterDTO;
+import com.i2s.worfklow_api_final.enums.ExecutionStatus;
 import com.i2s.worfklow_api_final.enums.TaskStatus;
 import com.i2s.worfklow_api_final.model.*;
 import com.i2s.worfklow_api_final.repository.*;
@@ -104,7 +108,7 @@ public class TaskService {
                 MethodExecution methodExecution = new MethodExecution();
                 methodExecution.setTask(savedTask); // Use the savedTask instance here
                 methodExecution.setMethod(method);
-                methodExecution.setExecuted(false); // Set the initial executed status as false
+                methodExecution.setStatus(ExecutionStatus.PENDING);
                 methodExecutions.add(methodExecution);
             }
             // Save all MethodExecution instances
@@ -148,6 +152,7 @@ public class TaskService {
             return taskDTO;
         }).collect(Collectors.toList());
     }
+
     public List<TaskDTO> getTasksByProject(long projectId) {
         List<Task> tasks = taskRepository.findByProjectId(projectId);
 
@@ -250,10 +255,16 @@ public class TaskService {
 
         // Iterate through the MethodExecution instances and attempt execution
         for (MethodExecution methodExecution : methodExecutions) {
-            if (!methodExecution.isExecuted()) {
-                executeMethodWithUserParameters(methodExecution, userParametersByMethodExecutionId);
+            if (methodExecution.getStatus() != ExecutionStatus.SUCCESS && methodExecution.getStatus() != ExecutionStatus.IN_PROGRESS) {
+                if (userParametersByMethodExecutionId.containsKey(methodExecution.getId())) {
+                    executeMethodWithUserParameters(methodExecution, userParametersByMethodExecutionId);
+                } else {
+                    // Handle case when there is no matching key in the userParametersByMethodExecutionId map
+                    System.out.println("No matching user parameters found for method execution ID: " + methodExecution.getId());
+                }
             }
         }
+
 
         // If task does not have a child task, set its status to FINISHED, regardless of its verification requirement
         if (task.getChildTasks() == null || task.getChildTasks().isEmpty()) {
@@ -299,20 +310,25 @@ public class TaskService {
         List<Parameter> parameters = method.getParameters();
         List<UserParameterDTO> userParameters = userParametersByMethodExecutionId.get(methodExecution.getId());
 
+
         // Validate all user parameters before attempting method execution
         if (areAllUserParametersValid(userParameters, parameters)) {
             try {
+                methodExecution.setStatus(ExecutionStatus.IN_PROGRESS);
                 executeMethod(method, userParameters);
-                methodExecution.setExecuted(true);
+                methodExecution.setStatus(ExecutionStatus.SUCCESS);
+
             } catch (Exception e) {
                 System.out.println("Error executing method: " + method.getMethodName());
+                methodExecution.setStatus(ExecutionStatus.FAILURE);
                 e.printStackTrace();
-            } finally {
-                methodExecutionRepository.save(methodExecution);
             }
         } else {
             System.out.println("Invalid user parameters provided for method: " + method.getMethodName());
         }
+
+
+        methodExecutionRepository.save(methodExecution);
     }
 
 
@@ -327,24 +343,37 @@ public class TaskService {
         return parameters.stream().anyMatch(param -> param.getParameterName().equals(userParam.getParameterName()));
     }
 
-    // Executes a method using reflection and logs any errors
-    private void executeMethod(Method method, List<UserParameterDTO> userParameters) {
-        try {
-            java.lang.reflect.Method actionMethod = Arrays.stream(actionService.getClass().getDeclaredMethods()).filter(m -> m.getName().equals(method.getMethodName())).findFirst().orElseThrow(() -> new NoSuchMethodException("Method not found: " + method.getMethodName()));
 
-            Object[] args = userParameters.stream().map(UserParameterDTO::getParameterValue).toArray();
-            actionMethod.invoke(actionService, args);
+    private void executeMethod(Method method, List<UserParameterDTO> userParameters) {
+        java.lang.reflect.Method actionMethod;
+
+        try {
+            actionMethod = Arrays.stream(actionService.getClass().getDeclaredMethods()).filter(m -> m.getName().equals(method.getMethodName())).findFirst().orElseThrow(() -> new NoSuchMethodException("Method not found: " + method.getMethodName()));
         } catch (NoSuchMethodException e) {
             System.out.println("Method not found: " + method.getMethodName());
             e.printStackTrace();
             throw new RuntimeException(e);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            System.out.println("Error executing method: " + method.getMethodName());
+        }
+
+        Object[] args = userParameters.stream().map(UserParameterDTO::getParameterValue).toArray();
+        try {
+            actionMethod.invoke(actionService, args);
+        } catch (IllegalArgumentException e) {
+            System.out.println("Illegal argument provided for method: " + method.getMethodName());
             e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            System.out.println("Error accessing method: " + method.getMethodName());
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            System.out.println("Error executing method: " + method.getMethodName());
+            // Print the cause of the InvocationTargetException
+            System.out.println("Cause: " + e.getCause());
+            e.getCause().printStackTrace();
             throw new RuntimeException(e);
         }
     }
-
 
     // Validates a task and updates the status of its child tasks if necessary.
     public void validateAndStartChildTasks(long taskId) {

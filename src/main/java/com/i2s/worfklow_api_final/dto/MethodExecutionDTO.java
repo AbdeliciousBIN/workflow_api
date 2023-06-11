@@ -1,5 +1,6 @@
 package com.i2s.worfklow_api_final.dto;
 
+import com.i2s.worfklow_api_final.enums.ExecutionStatus;
 import com.i2s.worfklow_api_final.enums.TaskStatus;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -14,7 +15,8 @@ public class MethodExecutionDTO {
     private long id;
     private long taskId;
     private long methodId;
-    private boolean executed;
+
+    private ExecutionStatus status ;
 
     public MethodExecutionDTO() {
     }

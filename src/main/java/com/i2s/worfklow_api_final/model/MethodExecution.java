@@ -1,5 +1,6 @@
 package com.i2s.worfklow_api_final.model;
 
+import com.i2s.worfklow_api_final.enums.ExecutionStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,13 +19,14 @@ public class MethodExecution {
     @JoinColumn(name = "task_id")
     private Task task;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
     @JoinColumn(name = "method_id")
     private Method method;
 
 
-    @Column(nullable = false)
-    private boolean executed;
+
+    @Enumerated(EnumType.STRING)
+    private ExecutionStatus status ;
 
     public MethodExecution() {
     }

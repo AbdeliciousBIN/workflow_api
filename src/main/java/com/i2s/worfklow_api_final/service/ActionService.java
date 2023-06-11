@@ -7,7 +7,9 @@ import com.i2s.worfklow_api_final.util.ReflectionUtil;
 import com.vonage.client.VonageClient;
 import com.vonage.client.sms.MessageStatus;
 import com.vonage.client.sms.SmsSubmissionResponse;
+import com.vonage.client.sms.SmsSubmissionResponseMessage;
 import com.vonage.client.sms.messages.TextMessage;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -79,32 +81,40 @@ public class ActionService {
 
     // Methods
 
-    public void sendEmail(String sender, String receiver, String subject, String content) {
+    public void sendEmail(String sender, String receiver, String subject, String content) throws MailException {
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(sender);
         message.setTo(receiver);
         message.setSubject(subject);
         message.setText(content);
         javaMailSender.send(message);
+        System.out.println("Email sent successfully");
     }
 
-    public void sendSms(String from, String to, String text) {
+
+    public void sendSms(String from, String to, String text) throws Exception {
         TextMessage message = new TextMessage(from, to, text);
         SmsSubmissionResponse response = vonageClient.getSmsClient().submitMessage(message);
-        if (response.getMessages() != null) {
-            response.getMessages().forEach(msg -> {
-                        if (msg.getStatus() == MessageStatus.OK) {
-                            System.out.println("Message sent successfully");
-                        } else {
-                            System.out.println("Error: " + msg.getErrorText());
 
-                        }
-                    }
-            );
+        if (response.getMessages() == null) {
+            throw new Exception("Failed to send message, response is null");
         }
+
+        for (SmsSubmissionResponseMessage msg : response.getMessages()) {
+            if (msg.getStatus() != MessageStatus.OK) {
+                throw new Exception("Failed to send message, error: " + msg.getErrorText());
+            }
+        }
+
+        System.out.println("Message sent successfully");
     }
 
     public void ridil(int tkhbi9a, String chiL3ba) {
+      System.out.println("ridil ");
+
+    }
+    public void ridil1(String tkhbi9a, String chiL3ba) {
+        System.out.println("ridil ");
 
     }
 }
