@@ -3,9 +3,10 @@ package com.i2s.worfklow_api_final.service;
 import com.i2s.worfklow_api_final.dto.JobDTO;
 import com.i2s.worfklow_api_final.dto.UserDTO;
 import com.i2s.worfklow_api_final.model.Job;
-
+import com.i2s.worfklow_api_final.model.Role;
 import com.i2s.worfklow_api_final.model.User;
 import com.i2s.worfklow_api_final.repository.JobRepository;
+import com.i2s.worfklow_api_final.repository.RoleRepository;
 import com.i2s.worfklow_api_final.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,12 +25,14 @@ public class UserService {
     private final UserRepository userRepository;
     private final JobRepository jobRepository;
     private final ModelMapper modelMapper;
+    private final RoleRepository roleRepository;
 
     @Autowired
-    public UserService(UserRepository userRepository, JobRepository jobRepository, ModelMapper modelMapper) {
+    public UserService(UserRepository userRepository, JobRepository jobRepository, ModelMapper modelMapper, RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.jobRepository = jobRepository;
         this.modelMapper = modelMapper;
+        this.roleRepository = roleRepository;
     }
 
     public List<UserDTO> getAllUsers() {
@@ -47,16 +50,19 @@ public class UserService {
         // Set the Job for the user (if jobId is provided)
         Job job = jobRepository.findById(userDTO.getJobId()).orElseThrow(() -> new EntityNotFoundException("Job with ID " + userDTO.getJobId() + " not found"));
         user.setJob(job);
-
+        Role role = roleRepository.findRoleByName(userDTO.getRoleName()).orElseThrow(() -> new EntityNotFoundException("Role with name " + userDTO.getRoleName() + " not found"));
+        user.setRole(role);
         // Hash the user's password using bcrypt
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         String hashedPassword = passwordEncoder.encode(user.getPasswordHash());
         user.setPasswordHash(hashedPassword);
         User savedUser = userRepository.save(user);
+
+        savedUser.setPasswordHash(null);
         return modelMapper.map(savedUser, UserDTO.class);
     }
 
-    public void deleteUser(long id ){
+    public void deleteUser(long id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("User with ID " + id + " not found."));
         userRepository.deleteById(id);

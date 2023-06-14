@@ -7,7 +7,9 @@ import lombok.Setter;
 import lombok.ToString;
 
 import javax.persistence.*;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -23,8 +25,9 @@ public class User {
     private String fullName;
     @Column(nullable = false)
     private String email;
-    @Column(nullable = false)
-    private String role;
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(name = "role_id", nullable = false)
+    private Role role;
     @Column(nullable = false, name = "password_hash")
     private String passwordHash;
 
@@ -33,8 +36,8 @@ public class User {
 
 
     private String address;
-    @Column(name = "profile_picture")
-    private String profilePicture;
+    @Column(name = "profile_picture_id")
+    private long profilePictureId;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -43,6 +46,7 @@ public class User {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Feedback> feedbacks;
+
     public User() {
     }
 
