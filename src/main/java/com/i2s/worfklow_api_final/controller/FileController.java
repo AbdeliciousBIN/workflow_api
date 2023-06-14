@@ -56,6 +56,22 @@ public class FileController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
         }
     }
+    @PostMapping("/imageFiles")
+    public ResponseEntity<?> uploadImageFile(@RequestParam("file") MultipartFile file) {
+        try {
+            return ResponseEntity.status(HttpStatus.CREATED).body(fileService.storeImageFile(file));
+        } catch (DataIntegrityViolationException e) {
+            // handle database constraint violation error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Database constraint violation error occurred.");
+        } catch (IllegalArgumentException e) {
+            // handle invalid input data error
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid input data error occurred.");
+        } catch (Exception e) {
+            // handle any other unexpected error
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
+        }
+    }
+
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteFile(@PathVariable long id) {

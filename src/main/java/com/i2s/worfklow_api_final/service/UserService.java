@@ -3,12 +3,13 @@ package com.i2s.worfklow_api_final.service;
 import com.i2s.worfklow_api_final.dto.JobDTO;
 import com.i2s.worfklow_api_final.dto.UserDTO;
 import com.i2s.worfklow_api_final.model.Job;
-import com.i2s.worfklow_api_final.model.Project;
+
 import com.i2s.worfklow_api_final.model.User;
 import com.i2s.worfklow_api_final.repository.JobRepository;
 import com.i2s.worfklow_api_final.repository.UserRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import javax.persistence.EntityNotFoundException;
@@ -16,6 +17,7 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
 
 @Service
 public class UserService {
@@ -45,6 +47,11 @@ public class UserService {
         // Set the Job for the user (if jobId is provided)
         Job job = jobRepository.findById(userDTO.getJobId()).orElseThrow(() -> new EntityNotFoundException("Job with ID " + userDTO.getJobId() + " not found"));
         user.setJob(job);
+
+        // Hash the user's password using bcrypt
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String hashedPassword = passwordEncoder.encode(user.getPasswordHash());
+        user.setPasswordHash(hashedPassword);
         User savedUser = userRepository.save(user);
         return modelMapper.map(savedUser, UserDTO.class);
     }

@@ -85,6 +85,40 @@ public class FileService {
             return fileDTO;
         });
     }
+    public FileDTO storeImageFile(@Valid MultipartFile multipartFile) {
+        String originalFileName = multipartFile.getOriginalFilename();
+        if (originalFileName == null || originalFileName.contains("..")) {
+            throw new IllegalArgumentException("Invalid file name.");
+        }
+
+        String fileExtension = FilenameUtils.getExtension(originalFileName);
+
+        List<String> acceptedExtensionsList = Arrays.asList("png", "jpeg", "jpg", "gif", "bmp", "webp", "tiff", "ico", "heic");
+        if (!acceptedExtensionsList.contains(fileExtension)) {
+            throw new IllegalArgumentException("Invalid file type.");
+        }
+
+        if (multipartFile.getSize() > MAX_FILE_SIZE) {
+            throw new IllegalArgumentException("File size exceeds limit.");
+        }
+
+        Path filePath = storageService.storeFile(multipartFile);
+
+        String fileName = filePath.getFileName().toString();
+        String contentType = multipartFile.getContentType();
+        long fileSize = multipartFile.getSize();
+
+        File file = new File();
+        file.setFileName(fileName);
+        file.setFilePath(filePath.toString());
+        file.setSize(fileSize);
+        file.setContentType(contentType);
+        file.setUploadDateTime(LocalDateTime.now());
+
+        File savedFile = fileRepository.save(file);
+        return modelMapper.map(savedFile, FileDTO.class);
+    }
+
 
     public List<FileDTO> getAllFiles() {
         return fileRepository.findAll().stream().map(file -> {
