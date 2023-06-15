@@ -1,7 +1,6 @@
 package com.i2s.worfklow_api_final.security;
 
 
-
 import io.jsonwebtoken.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -25,8 +24,11 @@ public class JwtTokenProvider {
         Date now = new Date();
         Date expiryDate = new Date(now.getTime() + jwtExpirationInMs);
 
+        String role = userPrincipal.getAuthorities().iterator().next().getAuthority();
+
         return Jwts.builder()
                 .setSubject(Long.toString(userPrincipal.getId()))
+                .claim("role", role) // add the role as a claim
                 .setIssuedAt(new Date())
                 .setExpiration(expiryDate)
                 .signWith(SignatureAlgorithm.HS512, jwtSecret)
@@ -41,6 +43,16 @@ public class JwtTokenProvider {
 
         return Long.parseLong(claims.getSubject());
     }
+
+    public String getRoleFromJWT(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(jwtSecret)
+                .parseClaimsJws(token)
+                .getBody();
+
+        return claims.get("role", String.class);
+    }
+
 
     public boolean validateToken(String authToken) {
         try {
