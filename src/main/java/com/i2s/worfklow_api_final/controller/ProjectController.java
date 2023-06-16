@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/projects")
+@RequestMapping("/api")
 public class ProjectController {
     private final ProjectService projectService;
 
@@ -24,19 +24,19 @@ public class ProjectController {
         this.projectService = projectService;
     }
 
-    @GetMapping
+    @GetMapping("/user/projects")
     public ResponseEntity<List<ProjectDTO>> getAllProjects() {
         return ResponseEntity.ok(projectService.getAllProjects());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/projects/{id}")
     public ResponseEntity<ProjectDTO> getProjectById(@PathVariable Long id) {
         return projectService.getProjectById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/idByName")
+    @GetMapping("/user/projects/idByName")
     public ResponseEntity<?> getProjectIdByName(@RequestParam("projectName") String projectName) {
         try {
             return ResponseEntity.ok(projectService.getProjectIdByName(projectName));
@@ -51,7 +51,7 @@ public class ProjectController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
         }
     }
-    @GetMapping("/task/{taskId}")
+    @GetMapping("/user/projects/task/{taskId}")
     public ResponseEntity<?> getProjectByTaskId(@PathVariable long taskId) {
         try {
             ProjectDTO project = projectService.getProjectByTaskId(taskId);
@@ -69,7 +69,7 @@ public class ProjectController {
     }
 
 
-    @PostMapping
+    @PostMapping("/admin/projects")
     public ResponseEntity<?> createProject(@RequestBody ProjectDTO projectDTO) {
         try {
             ProjectDTO createdProject = projectService.saveProject(projectDTO);
@@ -88,7 +88,7 @@ public class ProjectController {
         }
     }
 
-    @PutMapping("/{id}")
+    @PutMapping("/admin/projects/{id}")
     public ResponseEntity<?> updateProject(@PathVariable Long id, @RequestBody ProjectDTO projectDTO) {
         try {
             ProjectDTO updatedProject = projectService.updateProject(id, projectDTO);
@@ -106,7 +106,7 @@ public class ProjectController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/projects/{id}")
     public ResponseEntity<?> deleteProject(@PathVariable Long id) {
         try {
             projectService.deleteProject(id);

@@ -15,7 +15,7 @@ import java.util.Optional;
 
 
 @RestController
-@RequestMapping("/api/steps")
+@RequestMapping("/api")
 public class StepController {
     private final StepService stepService;
 
@@ -24,19 +24,19 @@ public class StepController {
         this.stepService = stepService;
     }
 
-    @GetMapping
+    @GetMapping("/user/steps")
     public ResponseEntity<List<StepDTO>> getAllSteps() {
         return ResponseEntity.ok(stepService.getAllSteps());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/steps/{id}")
     public ResponseEntity<StepDTO> getStepById(@PathVariable Long id) {
         return stepService.getStepById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/phase/{id}")
+    @GetMapping("/user/steps/phase/{id}")
     public ResponseEntity<?> getStepsByPhaseId(@PathVariable long id) {
         try {
             return ResponseEntity.ok(stepService.getStepsByPhaseId(id));
@@ -53,7 +53,7 @@ public class StepController {
     }
 
 
-    @PostMapping("/phases/{phaseId}")
+    @PostMapping("/admin/steps/phases/{phaseId}")
     public ResponseEntity<?> createStep(@PathVariable Long phaseId, @RequestBody StepDTO stepDTO) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(stepService.createStep(phaseId, stepDTO));
@@ -69,7 +69,7 @@ public class StepController {
         }
     }
 
-    @PutMapping("/steps/{id}")
+    @PutMapping("/admin/steps/steps/{id}")
     public ResponseEntity<?> updateStep(@PathVariable Long id, @RequestBody StepDTO stepDTO) {
         try {
             return ResponseEntity.ok(stepService.updateStep(id, stepDTO));
@@ -86,7 +86,7 @@ public class StepController {
         }
     }
 
-    @DeleteMapping("/steps/{id}")
+    @DeleteMapping("/admin/steps/steps/{id}")
     public ResponseEntity<?> deleteStep(@PathVariable Long id) {
         try {
             stepService.deleteStep(id);

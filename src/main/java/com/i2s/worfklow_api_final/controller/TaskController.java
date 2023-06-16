@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/tasks")
+@RequestMapping("/api")
 public class TaskController {
 
     private final TaskService taskService;
@@ -27,35 +27,35 @@ public class TaskController {
         this.taskService = taskService;
     }
 
-    @GetMapping
+    @GetMapping("/user/tasks")
     public ResponseEntity<List<TaskDTO>> getAllTasks() {
         return ResponseEntity.ok(taskService.getAllTasks());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/tasks/{id}")
     public ResponseEntity<TaskDTO> getTaskById(@PathVariable long id) {
         return taskService.getTaskById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/filter")
+    @GetMapping("/user/tasks/filter")
     public ResponseEntity<List<TaskDTO>> getTasksByJobIdsStatusProjectPhaseStep(@RequestParam("jobIds") List<Long> jobIds, @RequestParam("status") List<TaskStatus> statusList, @RequestParam(value = "projectId", required = false) Long projectId, @RequestParam(value = "phaseId", required = false) Long phaseId, @RequestParam(value = "stepId", required = false) Long stepId) {
 
         return ResponseEntity.ok(taskService.getTasksByJobIdsStatusProjectPhaseStep(jobIds, statusList, projectId, phaseId, stepId));
     }
 
 
-    @GetMapping("/{taskId}/methodExecutions")
+    @GetMapping("/user/tasks/{taskId}/methodExecutions")
     public ResponseEntity<List<MethodExecutionDTO>> getMethodExecutionsByTaskId(@PathVariable("taskId") long taskId) {
         List<MethodExecutionDTO> methodExecutionDTOs = taskService.getMethodExecutionsByTaskId(taskId);
         return ResponseEntity.ok(methodExecutionDTOs);
     }
 
-    @GetMapping("/{id}/name")
+    @GetMapping("/user/tasks/{id}/name")
     public ResponseEntity<String> getTaskNameById(@PathVariable long id) {
         return taskService.getTaskNameById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/validation/verifiableByJob/{jobId}")
+    @GetMapping("/user/tasks/validation/verifiableByJob/{jobId}")
     public ResponseEntity<List<TaskDTO>> getTasksWaitingForValidationByJobIdAndProjectPhaseStep(@PathVariable long jobId, @RequestParam(required = false) Long projectId, @RequestParam(required = false) Long phaseId, @RequestParam(required = false) Long stepId) {
         try {
             List<TaskDTO> taskDTOs = taskService.getTasksWaitingForValidationByJobIdAndProjectPhaseStep(jobId, projectId, phaseId, stepId);
@@ -66,7 +66,7 @@ public class TaskController {
     }
 
 
-    @PostMapping
+    @PostMapping("/admin/tasks")
     public ResponseEntity<?> createTask(@RequestBody TaskDTO taskDTO) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(taskService.createTask(taskDTO));
@@ -88,7 +88,7 @@ public class TaskController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/tasks/{id}")
     public ResponseEntity<?> deleteTask(@PathVariable long id) {
         try {
             taskService.deleteTask(id);
@@ -105,7 +105,7 @@ public class TaskController {
         }
     }
 
-    @GetMapping("/step/{stepId}")
+    @GetMapping("/user/tasks/step/{stepId}")
     public ResponseEntity<?> getTasksByStep(@PathVariable long stepId) {
         try {
             List<TaskDTO> tasks = taskService.getTasksByStep(stepId);
@@ -121,7 +121,7 @@ public class TaskController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
         }
     }
-    @GetMapping("/project/{projectId}")
+    @GetMapping("/user/tasks/project/{projectId}")
     public ResponseEntity<?> getTasksByProject(@PathVariable long projectId) {
         try {
             List<TaskDTO> tasks = taskService.getTasksByProject(projectId);
@@ -139,7 +139,7 @@ public class TaskController {
     }
 
 
-    @PostMapping("/{projectId}/startInitialTasks")
+    @PostMapping("/admin/tasks/{projectId}/startInitialTasks")
     public ResponseEntity<List<TaskDTO>> startInitialTasks(@PathVariable long projectId) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(taskService.startInitialTasks(projectId));
@@ -150,7 +150,7 @@ public class TaskController {
         }
     }
 
-    @PutMapping("/{id}/status")
+    @PutMapping("/admin/tasks/{id}/status")
     public ResponseEntity<TaskDTO> updateTaskStatus(@PathVariable long id, @RequestBody TaskStatus newStatus) {
         try {
             TaskDTO updatedTaskDTO = taskService.updateTaskStatus(id, newStatus);
@@ -162,7 +162,7 @@ public class TaskController {
         }
     }
 
-    @PostMapping("/{taskId}/executeMethods")
+    @PostMapping("/user/tasks/{taskId}/executeMethods")
     public ResponseEntity<?> executeMethodsForTask(@PathVariable long taskId, @RequestBody Map<Long, List<UserParameterDTO>> userParametersByMethodExecutionId) {
         try {
             taskService.executeMethodsForTask(taskId, userParametersByMethodExecutionId);
@@ -186,7 +186,7 @@ public class TaskController {
         }
     }
 
-    @PostMapping("/{taskId}/validateAndStartChildTasks")
+    @PostMapping("/user/tasks/{taskId}/validateAndStartChildTasks")
     public ResponseEntity<?> validateAndStartChildTasks(@PathVariable long taskId) {
         try {
             taskService.validateAndStartChildTasks(taskId);
@@ -201,7 +201,7 @@ public class TaskController {
         }
     }
 
-    @PostMapping("{taskId}/invalidate")
+    @PostMapping("/user/tasks/{taskId}/invalidate")
     public ResponseEntity<?> invalidateTask(@PathVariable long taskId) {
         try {
             taskService.invalidateTask(taskId);
@@ -216,7 +216,7 @@ public class TaskController {
         }
     }
 
-    @PostMapping("/{taskId}/feedbacks")
+    @PostMapping("/user/tasks/{taskId}/feedbacks")
     public ResponseEntity<?> addFeedback(@PathVariable long taskId, @RequestBody FeedbackDTO feedbackDTO) {
         try {
             taskService.addFeedback(taskId, feedbackDTO);

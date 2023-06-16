@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/files")
+@RequestMapping("/api")
 public class FileController {
 
     private final FileService fileService;
@@ -26,22 +26,22 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    @GetMapping
+    @GetMapping("/user/files")
     public ResponseEntity<List<FileDTO>> getAllFiles() {
         return ResponseEntity.ok(fileService.getAllFiles());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/files/{id}")
     public ResponseEntity<FileDTO> getFileById(@PathVariable long id) {
         return fileService.getFileById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/project/{projectId}")
+    @GetMapping("/user/files/project/{projectId}")
     public ResponseEntity<List<FileDTO>> getFileByProject(@PathVariable long projectId) {
         return ResponseEntity.ok(fileService.getFilesByProject(projectId));
     }
 
-    @PostMapping
+    @PostMapping("/admin/files")
     public ResponseEntity<?> uploadFile(@RequestParam("file") MultipartFile file) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(fileService.storeFile(file));
@@ -56,7 +56,7 @@ public class FileController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Unexpected error occurred.");
         }
     }
-    @PostMapping("/imageFiles")
+    @PostMapping("/admin/files/imageFiles")
     public ResponseEntity<?> uploadImageFile(@RequestParam("file") MultipartFile file) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(fileService.storeImageFile(file));
@@ -73,7 +73,7 @@ public class FileController {
     }
 
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/files/{id}")
     public ResponseEntity<?> deleteFile(@PathVariable long id) {
         try {
             fileService.deleteFile(id);
@@ -90,7 +90,7 @@ public class FileController {
         }
     }
 
-    @GetMapping("/download/{id}")
+    @GetMapping("/user/files/download/{id}")
     public ResponseEntity<?> downloadFile(@PathVariable long id) {
         Optional<Resource> resourceOptional = fileService.loadFileAsResource(id);
 

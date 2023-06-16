@@ -13,7 +13,7 @@ import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/methods")
+@RequestMapping("/api")
 public class MethodController {
 
     private final MethodService methodService;
@@ -25,18 +25,18 @@ public class MethodController {
 
     }
 
-    @GetMapping
+    @GetMapping("/user/methods")
     public ResponseEntity<List<MethodDTO>> getAllMethods(){
 
         return ResponseEntity.ok(methodService.getAllMethods());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/methods/{id}")
     public ResponseEntity<MethodDTO> getMethodById(@PathVariable long id){
         return methodService.getMethodById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/admin/methods")
     public ResponseEntity<?> createMethod(@RequestBody MethodDTO methodDTO){
         try{
             return ResponseEntity.status(HttpStatus.CREATED).body(methodService.createMethod(methodDTO));
@@ -52,7 +52,7 @@ public class MethodController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/methods/{id}")
     public ResponseEntity<?> deleteMethod(@PathVariable long id) {
         try {
             methodService.deleteMethod(id);

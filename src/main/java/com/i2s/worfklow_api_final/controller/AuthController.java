@@ -33,17 +33,14 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<?> authenticateUser(@RequestBody LoginRequestDTO loginRequest) {
 
-        Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        loginRequest.getEmail(),
-                        loginRequest.getPassword()
-                )
-        );
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String jwt = tokenProvider.generateToken(authentication);
-        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt));
+        Long userId = tokenProvider.getUserIdFromJWT(jwt);
+        String role = tokenProvider.getRoleFromJWT(jwt);
+        return ResponseEntity.ok(new JwtAuthenticationResponse(jwt,userId,role));
     }
 
     @Getter
@@ -51,10 +48,15 @@ public class AuthController {
     public static class JwtAuthenticationResponse {
         private String accessToken;
         private String tokenType = "Bearer";
+        private long userId;
+        private String role;
 
-        public JwtAuthenticationResponse(String accessToken) {
+        public JwtAuthenticationResponse(String accessToken, long userId, String role) {
             this.accessToken = accessToken;
+            this.userId = userId;
+            this.role = role;
         }
+
 
     }
 }

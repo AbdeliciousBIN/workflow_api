@@ -3,11 +3,10 @@ package com.i2s.worfklow_api_final.security;
 import com.i2s.worfklow_api_final.model.Role;
 import com.i2s.worfklow_api_final.model.User;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class CustomUserDetails implements UserDetails {
     private final User user;
@@ -19,9 +18,9 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Set<Role> roles = new HashSet<>();
-        roles.add(user.getRole());
-        return roles;
+        List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_" + user.getRole().getName().toUpperCase()));
+        return authorities;
     }
 
     @Override

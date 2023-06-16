@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping("/api")
 public class NotificationController {
     private final NotificationService notificationService;
 
@@ -20,27 +20,27 @@ public class NotificationController {
         this.notificationService = notificationService;
     }
 
-    @GetMapping
+    @GetMapping("/user/notifications")
     public ResponseEntity<List<NotificationDTO>> getAllNotifications() {
         return ResponseEntity.ok(notificationService.getAllNotifications());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/notifications/{id}")
     public ResponseEntity<NotificationDTO> getNotificationById(@PathVariable long id) {
         return notificationService.getNotificationById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/user/{userId}")
+    @GetMapping("/user/notifications/user/{userId}")
     public ResponseEntity<List<NotificationDTO>> getNotificationsForUser(@PathVariable long userId) {
         return ResponseEntity.ok(notificationService.getNotificationsForUser(userId));
     }
 
-    @GetMapping("/user/{userId}/unread")
+    @GetMapping("/user/notifications/user/{userId}/unread")
     public ResponseEntity<List<NotificationDTO>> getUnreadNotificationsForUser(@PathVariable long userId) {
         return ResponseEntity.ok(notificationService.getUnreadNotificationsForUser(userId));
     }
 
-    @PostMapping("/{id}/read")
+    @PostMapping("/user/notifications/{id}/read")
     public ResponseEntity<?> markNotificationAsRead(@PathVariable long id) {
         try {
             return ResponseEntity.ok(notificationService.markNotificationAsRead(id));

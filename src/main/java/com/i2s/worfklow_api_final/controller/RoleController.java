@@ -12,7 +12,7 @@ import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/roles")
+@RequestMapping("/api")
 public class RoleController {
     private final RoleService roleService;
 
@@ -21,17 +21,17 @@ public class RoleController {
         this.roleService = roleService;
     }
 
-    @GetMapping
+    @GetMapping("/user/roles")
     public ResponseEntity<List<RoleDTO>> getAllRoles() {
         return ResponseEntity.ok(roleService.getAllRoles());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/roles/{id}")
     public ResponseEntity<RoleDTO> getRoleById(@PathVariable long id) {
         return roleService.getRoleById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/admin/roles")
     public ResponseEntity<?> createRole(@RequestBody RoleDTO roleDTO) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(roleService.createRole(roleDTO));
@@ -44,7 +44,7 @@ public class RoleController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/roles/{id}")
     public ResponseEntity<?> deleteRole(@PathVariable long id) {
         try {
             roleService.deleteRole(id);
@@ -60,7 +60,7 @@ public class RoleController {
         }
     }
 
-    @GetMapping("/name/{roleName}")
+    @GetMapping("/user/roles/name/{roleName}")
     public ResponseEntity<?> getRoleByName(@PathVariable String roleName) {
         try {
             RoleDTO roleDTO = roleService.getRoleByName(roleName);

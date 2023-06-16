@@ -12,7 +12,7 @@ import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/parameters")
+@RequestMapping("/api")
 public class ParameterController {
 
     private final ParameterService parameterService;
@@ -22,17 +22,17 @@ public class ParameterController {
         this.parameterService = parameterService;
     }
 
-    @GetMapping
+    @GetMapping("/user/parameters")
     public ResponseEntity<List<ParameterDTO>> getAllParameters(){
         return ResponseEntity.ok(parameterService.getAllParameters());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/parameters/{id}")
     public ResponseEntity<ParameterDTO> getParameterById(@PathVariable long id){
         return parameterService.getParameterById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @PostMapping
+    @PostMapping("/admin/parameters")
     public ResponseEntity<?> createParameter(@RequestBody ParameterDTO parameterDTO){
         try{
             return ResponseEntity.status(HttpStatus.CREATED).body(parameterService.createParameter(parameterDTO));
@@ -48,7 +48,7 @@ public class ParameterController {
         }
     }
 
-    @DeleteMapping("/{id}")
+    @DeleteMapping("/admin/parameters/{id}")
     public ResponseEntity<?> deleteParameter(@PathVariable long id) {
         try {
             parameterService.deleteParameter(id);

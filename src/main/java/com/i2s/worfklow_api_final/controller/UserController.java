@@ -14,7 +14,7 @@ import javax.persistence.EntityNotFoundException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api")
 public class UserController {
     private final UserService userService;
 
@@ -23,23 +23,23 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping
+    @GetMapping("/user/users")
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/users/{id}")
     public ResponseEntity<UserDTO> getUserById(@PathVariable long id) {
         return userService.getUserById(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/{id}/job")
+    @GetMapping("/user/users/{id}/job")
     public ResponseEntity<JobDTO> getJobByUserId(@PathVariable long id) {
         return userService.getJobByUserId(id).map(ResponseEntity::ok).orElse(ResponseEntity.notFound().build());
     }
 
 
-    @PostMapping
+    @PostMapping("/admin/users")
     public ResponseEntity<?> createUser(@RequestBody UserDTO userDTO) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(userService.createUser(userDTO));
@@ -55,7 +55,7 @@ public class UserController {
         }
     }
 
-    @DeleteMapping
+    @DeleteMapping("/admin/users")
     public ResponseEntity<?> deleteUser(long id) {
         try {
             userService.deleteUser(id);
@@ -72,7 +72,7 @@ public class UserController {
     }
 
 
-    @GetMapping("/name/{name}")
+    @GetMapping("/user/users/name/{name}")
     public ResponseEntity<?> getUserByName(@PathVariable String name) {
         try {
             UserDTO userDTO = userService.getUserByFullName(name);

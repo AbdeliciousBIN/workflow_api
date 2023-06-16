@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/phases")
+@RequestMapping("/api")
 public class PhaseController {
     private final PhaseService phaseService;
 
@@ -24,19 +24,19 @@ public class PhaseController {
         this.phaseService = phaseService;
     }
 
-    @GetMapping
+    @GetMapping("/user/phases")
     public ResponseEntity<List<PhaseDTO>> getAllPhases() {
         return ResponseEntity.ok(phaseService.getAllPhases());
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/user/phases/{id}")
     public ResponseEntity<PhaseDTO> getPhaseById(@PathVariable long id) {
         return phaseService.getPhaseById(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @GetMapping("/idByNameAndProjectName")
+    @GetMapping("/user/phases/idByNameAndProjectName")
     public ResponseEntity<?> getPhaseIdByNameAndProjectName(@RequestParam("phaseName") String phaseName, @RequestParam("projectName") String projectName) {
         try {
 
@@ -53,7 +53,7 @@ public class PhaseController {
         }
     }
 
-    @GetMapping("project/{id}")
+    @GetMapping("/user/phases/project/{id}")
     public ResponseEntity<?> getPhasesByProjectId(@PathVariable long id) {
         try {
             return ResponseEntity.ok(phaseService.getPhasesByProjectId(id));
@@ -70,7 +70,7 @@ public class PhaseController {
     }
 
 
-    @PostMapping("/projects/{projectId}")
+    @PostMapping("/admin/phases/projects/{projectId}")
     public ResponseEntity<?> createPhase(@PathVariable Long projectId, @RequestBody PhaseDTO phaseDTO) {
         try {
             return ResponseEntity.status(HttpStatus.CREATED).body(phaseService.createPhase(projectId, phaseDTO));
@@ -86,7 +86,7 @@ public class PhaseController {
         }
     }
 
-    @PutMapping("/phases/{id}")
+    @PutMapping("/admin/phases/{id}")
     public ResponseEntity<?> updatePhase(@PathVariable Long id, @RequestBody PhaseDTO phaseDTO) {
         try {
             return ResponseEntity.ok(phaseService.updatePhase(id, phaseDTO));
@@ -104,7 +104,7 @@ public class PhaseController {
 
     }
 
-    @DeleteMapping("/phases/{id}")
+    @DeleteMapping("/admin/phases/{id}")
     public ResponseEntity<?> deletePhase(@PathVariable Long id) {
         try {
             phaseService.deletePhase(id);
