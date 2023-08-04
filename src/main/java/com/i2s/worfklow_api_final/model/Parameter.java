@@ -21,7 +21,7 @@ public class Parameter {
     private String parameterName;
 
     @Column(nullable = false,name = "parameter_type")
-    private String parameterType;
+        private String parameterType;
 
     public Parameter() {
     }
